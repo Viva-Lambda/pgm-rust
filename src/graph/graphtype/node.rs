@@ -4,6 +4,7 @@
 pub use crate::graph::graphtype::obj::GraphObject;
 
 use std::collections::HashMap;
+use std::fmt;
 use std::hash::{Hash, Hasher};
 
 // implements graph object trait
@@ -22,6 +23,13 @@ impl Node {
     }
 }
 
+impl fmt::Display for Node {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let nid = &self.node_id;
+        write!(f, "Node[ id: {} ]", nid)
+    }
+}
+
 impl Hash for Node {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.node_id.hash(state);
@@ -29,12 +37,12 @@ impl Hash for Node {
 }
 
 impl GraphObject for Node {
-    fn id(&self) -> String {
-        self.node_id.clone()
+    fn id(&self) -> &String {
+        &self.node_id
     }
 
-    fn data(&self) -> HashMap<String, Vec<String>> {
-        self.node_data.clone()
+    fn data(&self) -> &HashMap<String, Vec<String>> {
+        &self.node_data
     }
 }
 

@@ -5,6 +5,7 @@ use crate::graph::graphtype::node::Node;
 use crate::graph::graphtype::obj::GraphObject;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::fmt;
 
 use std::hash::{Hash, Hasher};
 
@@ -16,6 +17,19 @@ struct Edge {
     start_node: Node,
     end_node: Node,
 }
+impl fmt::Display for Edge {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let eid = &self.edge_id;
+        let n1 = &self.start_node;
+        let n2 = &self.end_node;
+        let et = &self.edge_type;
+        write!(
+            f,
+            "Edge[ id: {}, start: {}, end: {}, type: {} ]",
+            eid, n1, n2, et
+        )
+    }
+}
 
 impl Hash for Edge {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -24,21 +38,21 @@ impl Hash for Edge {
 }
 
 impl GraphObject for Edge {
-    fn id(&self) -> String {
-        self.edge_id.clone()
+    fn id(&self) -> &String {
+        &self.edge_id
     }
 
-    fn data(&self) -> HashMap<String, Vec<String>> {
-        self.edge_data.clone()
+    fn data(&self) -> &HashMap<String, Vec<String>> {
+        &self.edge_data
     }
 }
 
 impl Edge {
-    pub fn start(&self) -> Node {
-        self.start_node.clone()
+    pub fn start(&self) -> &Node {
+        &self.start_node
     }
-    pub fn end(&self) -> Node {
-        self.end_node.clone()
+    pub fn end(&self) -> &Node {
+        &self.end_node
     }
     pub fn new(
         eid: String,
@@ -94,8 +108,8 @@ impl Edge {
     }
     pub fn node_ids(&self) -> HashSet<String> {
         let mut hset = HashSet::new();
-        hset.insert(self.start().id());
-        hset.insert(self.end().id());
+        hset.insert(self.start().id().clone());
+        hset.insert(self.end().id().clone());
         hset.clone()
     }
     pub fn is_endvertice(&self, n: &Node) -> bool {
@@ -103,16 +117,20 @@ impl Edge {
         let nid: &String = &n.id();
         ids.contains(nid)
     }
-    pub fn get_other(&self, n: &Node) -> Node {
-        let nid: &String = &n.id();
+    pub fn get_other(&self, n: &Node) -> &Node {
+        let nid: &String = n.id();
         let start = self.start();
         let sid = start.id();
         let end = self.end();
         let eid = end.id();
-        if sid == eid {
-            end.clone()
+        if sid == nid {
+            self.end()
+        } else if sid == eid {
+            self.start()
         } else {
-            start.clone()
+            let this_edge = dbg!(self);
+            let this_node = dbg!(n);
+            panic!("{n} does not belong to this {self}");
         }
     }
 }
