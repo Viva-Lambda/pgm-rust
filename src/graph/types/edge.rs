@@ -1,16 +1,17 @@
 // edge type
 
-use crate::graph::graphtype::edgetype::EdgeType;
-use crate::graph::graphtype::node::Node;
-use crate::graph::graphtype::obj::GraphObject;
+use crate::graph::traits::edge::Edge as EdgeTrait;
+use crate::graph::traits::graph_obj::GraphObject;
+use crate::graph::types::edgetype::EdgeType;
+use crate::graph::types::node::Node;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
 
 use std::hash::{Hash, Hasher};
 
-#[derive(Debug, PartialEq, Eq)]
-struct Edge {
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Edge {
     edge_id: String,
     edge_data: HashMap<String, Vec<String>>,
     edge_type: EdgeType,
@@ -47,13 +48,19 @@ impl GraphObject for Edge {
     }
 }
 
-impl Edge {
-    pub fn start(&self) -> &Node {
+impl EdgeTrait for Edge {
+    fn start(&self) -> &Node {
         &self.start_node
     }
-    pub fn end(&self) -> &Node {
+    fn end(&self) -> &Node {
         &self.end_node
     }
+    fn has_type(&self) -> EdgeType {
+        self.edge_type.clone()
+    }
+}
+
+impl Edge {
     pub fn new(
         eid: String,
         snode: Node,
@@ -102,9 +109,6 @@ impl Edge {
     }
     pub fn is_end(&self, n: &Node) -> bool {
         self.end().id() == n.id()
-    }
-    pub fn has_type(&self) -> EdgeType {
-        self.edge_type.clone()
     }
     pub fn node_ids(&self) -> HashSet<String> {
         let mut hset = HashSet::new();

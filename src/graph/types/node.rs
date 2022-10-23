@@ -1,7 +1,7 @@
 // graph node
 
 // call the GraphObject trait
-pub use crate::graph::graphtype::obj::GraphObject;
+pub use crate::graph::traits::graph_obj::GraphObject;
 
 use std::collections::HashMap;
 use std::fmt;

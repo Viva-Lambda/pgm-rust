@@ -1,19 +1,8 @@
+//! main entry point for the library
+#![warn(missing_docs)]
+#![deny(missing_docs)]
+#![deny(missing_doc_code_examples)]
 
+mod factor;
 mod graph;
 mod pgm;
-mod factor;
-
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}

@@ -1,7 +1,7 @@
 // graph module declarations
 
-pub mod graphtype;
+pub mod types;
 
-mod ops;
+pub mod ops;
 
-mod model;
+pub mod traits;
