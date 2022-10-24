@@ -1,1 +1,5 @@
-// graph operations module declarations
+//! graph functions
+
+pub mod graph;
+pub mod edge;
+

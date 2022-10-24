@@ -5,7 +5,6 @@ use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::types::edgetype::EdgeType;
 use crate::graph::types::node::Node;
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::fmt;
 
 use std::hash::{Hash, Hasher};
@@ -104,37 +103,22 @@ impl Edge {
             edge_data: e_data,
         }
     }
-    pub fn is_start(&self, n: &Node) -> bool {
-        self.start().id() == n.id()
+    pub fn from_edgish_ref<T: EdgeTrait>(e: &T) -> Edge {
+        Edge {
+            edge_id: e.id().clone(),
+            edge_data: e.data().clone(),
+            start_node: e.start().clone(),
+            end_node: e.end().clone(),
+            edge_type: e.has_type().clone(),
+        }
     }
-    pub fn is_end(&self, n: &Node) -> bool {
-        self.end().id() == n.id()
-    }
-    pub fn node_ids(&self) -> HashSet<String> {
-        let mut hset = HashSet::new();
-        hset.insert(self.start().id().clone());
-        hset.insert(self.end().id().clone());
-        hset.clone()
-    }
-    pub fn is_endvertice(&self, n: &Node) -> bool {
-        let ids = self.node_ids();
-        let nid: &String = &n.id();
-        ids.contains(nid)
-    }
-    pub fn get_other(&self, n: &Node) -> &Node {
-        let nid: &String = n.id();
-        let start = self.start();
-        let sid = start.id();
-        let end = self.end();
-        let eid = end.id();
-        if sid == nid {
-            self.end()
-        } else if sid == eid {
-            self.start()
-        } else {
-            let this_edge = dbg!(self);
-            let this_node = dbg!(n);
-            panic!("{n} does not belong to this {self}");
+    pub fn from_edgish<T: EdgeTrait>(e: T) -> Edge {
+        Edge {
+            edge_id: e.id().clone(),
+            edge_data: e.data().clone(),
+            start_node: e.start().clone(),
+            end_node: e.end().clone(),
+            edge_type: e.has_type().clone(),
         }
     }
 }
@@ -161,42 +145,28 @@ mod tests {
     #[test]
     fn test_id() {
         let e = mk_uedge();
-        assert_eq!(e.id(), String::from("uedge"));
+        assert_eq!(e.id(), &String::from("uedge"));
     }
+    #[test]
     fn test_data() {
         let e = mk_uedge();
         let mut h1 = HashMap::new();
         h1.insert(String::from("my"), vec![String::from("data")]);
-        assert_eq!(e.data(), h1);
+        assert_eq!(e.data(), &h1);
     }
+    #[test]
     fn test_has_type() {
         let e = mk_uedge();
         assert_eq!(e.has_type(), EdgeType::Undirected);
     }
+    #[test]
     fn test_start() {
         let e = mk_uedge();
-        assert_eq!(e.start(), Node::new(String::from("m1"), HashMap::new()));
+        assert_eq!(e.start(), &Node::new(String::from("m1"), HashMap::new()));
     }
+    #[test]
     fn test_end() {
         let e = mk_uedge();
-        assert_eq!(e.end(), Node::new(String::from("m2"), HashMap::new()));
-    }
-    fn test_node_ids() {
-        let e = mk_uedge();
-        let ids = e.node_ids();
-        let mut h1 = HashSet::new();
-        h1.insert("m1".to_string());
-        h1.insert("m2".to_string());
-        assert_eq!(ids, h1);
-    }
-    fn test_endvertice_true() {
-        let e = mk_uedge();
-        let n1 = Node::new(String::from("m1"), HashMap::new());
-        assert!(e.is_endvertice(&n1));
-    }
-    fn test_endvertice_false() {
-        let e = mk_uedge();
-        let n1 = Node::new(String::from("m3"), HashMap::new());
-        assert!(!e.is_endvertice(&n1)); //
+        assert_eq!(e.end(), &Node::new(String::from("m2"), HashMap::new()));
     }
 }

@@ -2,6 +2,7 @@
 
 // call the GraphObject trait
 pub use crate::graph::traits::graph_obj::GraphObject;
+pub use crate::graph::traits::node::Node as NodeTrait;
 
 use std::collections::HashMap;
 use std::fmt;
@@ -19,6 +20,18 @@ impl Node {
         Node {
             node_id: nid,
             node_data: ndata,
+        }
+    }
+    pub fn from_nodish_ref<T: NodeTrait>(n: &T) -> Node {
+        Node {
+            node_id: n.id().clone(),
+            node_data: n.data().clone(),
+        }
+    }
+    pub fn from_nodish<T: NodeTrait>(n: T) -> Node {
+        Node {
+            node_id: n.id().clone(),
+            node_data: n.data().clone(),
         }
     }
 }
@@ -57,8 +70,9 @@ mod tests {
             node_id: String::from("mnode"),
             node_data: HashMap::new(),
         };
-        assert_eq!(my_node.id(), String::from("mnode"));
+        assert_eq!(my_node.id(), &String::from("mnode"));
     }
+    #[test]
     fn test_data() {
         let mut my_map: HashMap<String, Vec<String>> = HashMap::new();
         let myv = vec![
@@ -78,6 +92,6 @@ mod tests {
             String::from("stuff"),
         ];
         my_map2.insert(String::from("my"), myv2);
-        assert_eq!(my_node.data(), my_map2);
+        assert_eq!(my_node.data(), &my_map2);
     }
 }
