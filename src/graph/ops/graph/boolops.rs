@@ -26,13 +26,11 @@ mod tests {
         h1.insert(String::from("my"), vec![String::from("data")]);
         Edge::undirected(e_id.to_string(), n1, n2, h1)
     }
-
     fn test_is_empty_true() {
         let edges = HashSet::new();
         let g = Graph::from_edgeset(edges);
         assert!(is_empty(&g));
     }
-
     fn test_is_empty_false() {
         let mut edges = HashSet::new();
         edges.insert(mk_uedge("n1", "n2", "e1"));
