@@ -169,4 +169,28 @@ mod tests {
         let e = mk_uedge();
         assert_eq!(e.end(), &Node::new(String::from("m2"), HashMap::new()));
     }
+    #[test]
+    fn test_from_edgish_ref() {
+        let e = mk_uedge();
+        let n1 = Node::new(String::from("m1"), HashMap::new());
+        let n2 = Node::new(String::from("m2"), HashMap::new());
+        let mut h1 = HashMap::new();
+        h1.insert(String::from("my"), vec![String::from("data")]);
+        let e1 = Edge::undirected(String::from("uedge"), n1, n2, h1);
+        let e2 = Edge::from_edgish_ref(&e);
+
+        assert_eq!(e1, e2);
+    }
+    #[test]
+    fn test_from_edgish() {
+        let e = mk_uedge();
+        let n1 = Node::new(String::from("m1"), HashMap::new());
+        let n2 = Node::new(String::from("m2"), HashMap::new());
+        let mut h1 = HashMap::new();
+        h1.insert(String::from("my"), vec![String::from("data")]);
+        let e1 = Edge::undirected(String::from("uedge"), n1, n2, h1);
+        let e2 = Edge::from_edgish(e);
+
+        assert_eq!(e1, e2);
+    }
 }
