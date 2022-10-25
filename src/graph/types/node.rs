@@ -59,6 +59,8 @@ impl GraphObject for Node {
     }
 }
 
+impl NodeTrait for Node {}
+
 #[cfg(test)]
 mod tests {
 
@@ -93,5 +95,39 @@ mod tests {
         ];
         my_map2.insert(String::from("my"), myv2);
         assert_eq!(my_node.data(), &my_map2);
+    }
+
+    #[test]
+    fn test_from_nodish_ref() {
+        let mut my_map: HashMap<String, Vec<String>> = HashMap::new();
+        let myv = vec![
+            String::from("awesome"),
+            String::from("string"),
+            String::from("stuff"),
+        ];
+        my_map.insert(String::from("my"), myv);
+        let my_node = Node {
+            node_id: String::from("mnode"),
+            node_data: my_map,
+        };
+        let n2 = Node::from_nodish_ref(&my_node);
+        assert_eq!(my_node, n2);
+    }
+    #[test]
+    fn test_from_nodish() {
+        let mut my_map: HashMap<String, Vec<String>> = HashMap::new();
+        let myv = vec![
+            String::from("awesome"),
+            String::from("string"),
+            String::from("stuff"),
+        ];
+        my_map.insert(String::from("my"), myv);
+        let my_node = Node {
+            node_id: String::from("mnode"),
+            node_data: my_map,
+        };
+        let n1 = my_node.clone();
+        let n2 = Node::from_nodish(my_node);
+        assert_eq!(n1, n2);
     }
 }
