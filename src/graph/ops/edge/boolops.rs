@@ -2,17 +2,29 @@
 use crate::graph::ops::edge::miscops::node_ids;
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph_obj::GraphObject;
-use crate::graph::types::edge::Edge;
-use crate::graph::types::node::Node;
+use crate::graph::traits::node::Node;
 
-pub fn is_start(e: &Edge, n: &Node) -> bool {
+pub fn is_start<N, E>(e: &E, n: &N) -> bool
+where
+    N: Node,
+    E: EdgeTrait,
+{
     e.start().id() == n.id()
 }
-pub fn is_end(e: &Edge, n: &Node) -> bool {
+pub fn is_end<N, E>(e: &E, n: &N) -> bool
+where
+    N: Node,
+    E: EdgeTrait,
+{
     e.end().id() == n.id()
 }
-pub fn is_endvertice(e: &Edge, n: &Node) -> bool {
-    let ids = node_ids(&e);
+
+pub fn is_endvertice<N, E>(e: &E, n: &N) -> bool
+where
+    N: Node,
+    E: EdgeTrait,
+{
+    let ids = node_ids(e);
     let nid: &String = &n.id();
     ids.contains(nid)
 }
@@ -21,6 +33,8 @@ pub fn is_endvertice(e: &Edge, n: &Node) -> bool {
 mod tests {
 
     use super::*;
+    //
+    use crate::graph::types::edge::Edge;
     use std::collections::HashMap; // brings in the parent scope to current module scope
 
     fn mk_uedge() -> Edge {
