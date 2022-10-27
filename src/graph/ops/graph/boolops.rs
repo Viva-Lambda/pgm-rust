@@ -47,10 +47,10 @@ where
 /// - e1 an edge like object
 /// - e2 an edge like object
 /// - g a graph like object
-pub fn is_adjacent_of<G, T>(g: &G, e1: &E, e2: &E) -> bool
+pub fn is_adjacent_of<G, E>(g: &G, e1: &E, e2: &E) -> bool
 where
     G: Graph,
-    T: Edge,
+    E: Edge,
 {
     if !is_in(g, e1) {
         panic!("{e1} not in {g}");
@@ -60,7 +60,7 @@ where
     }
     let e1_ns = node_ids(e1);
     let e2_ns = node_ids(e2);
-    let common = e1_ns.intersection(&e2_ns).collect();
+    let common: HashSet<_> = e1_ns.intersection(&e2_ns).collect();
     !common.is_empty()
 }
 
@@ -83,13 +83,13 @@ where
     is_endvertice(e, n)
 }
 
-
 #[cfg(test)]
 mod tests {
 
     use super::*;
     //
     use crate::graph::types::edge::Edge;
+    use crate::graph::types::graph::Graph;
     use crate::graph::types::node::Node;
     use std::collections::HashMap;
 
@@ -103,15 +103,29 @@ mod tests {
         h1.insert(String::from("my"), vec![String::from("data")]);
         Edge::undirected(e_id.to_string(), n1, n2, h1)
     }
+    #[test]
     fn test_is_empty_true() {
         let edges = HashSet::new();
         let g = Graph::from_edgeset(edges);
         assert!(is_empty(&g));
     }
+    #[test]
     fn test_is_empty_false() {
         let mut edges = HashSet::new();
         edges.insert(mk_uedge("n1", "n2", "e1"));
         let g = Graph::from_edgeset(edges);
-        assert!(is_empty(&g));
+        assert!(!is_empty(&g));
     }
+
+    #[ignore]
+    #[test]
+    fn test_is_in() {}
+
+    #[ignore]
+    #[test]
+    fn test_is_adjacent_of() {}
+
+    #[ignore]
+    #[test]
+    fn test_is_node_incident() {}
 }

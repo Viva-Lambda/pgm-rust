@@ -1,10 +1,10 @@
 //! Functions that has an [Edge] among arguments that output various values.
 
-use crate::graph::traits::edge::Edge;
+use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 use std::collections::HashSet;
 
-pub fn node_ids<E: Edge>(e: &E) -> HashSet<String> {
+pub fn node_ids<E: EdgeTrait>(e: &E) -> HashSet<String> {
     let mut hset = HashSet::new();
     hset.insert(e.start().id().clone());
     hset.insert(e.end().id().clone());
@@ -15,6 +15,7 @@ pub fn node_ids<E: Edge>(e: &E) -> HashSet<String> {
 mod tests {
 
     use super::*; // brings in the parent scope to current module scope
+    use crate::graph::types::edge::Edge;
     use crate::graph::types::node::Node;
     use std::collections::HashMap;
 
