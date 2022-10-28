@@ -33,20 +33,4 @@ mod tests {
     #[ignore]
     #[test]
     fn test_neighbors_of() {}
-
-    #[ignore]
-    #[test]
-    fn test_edges_by_end() {}
-
-    #[ignore]
-    #[test]
-    fn test_edge_by_id() {}
-
-    #[ignore]
-    #[test]
-    fn test_edge_by_vertices() {}
-
-    #[ignore]
-    #[test]
-    fn test_edge_by_vertices() {}
 }

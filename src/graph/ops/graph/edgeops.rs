@@ -29,9 +29,4 @@ mod tests {
     #[ignore]
     #[test]
     fn test_edge_by_vertices() {}
-
-    #[ignore]
-    #[test]
-    fn test_edge_by_vertices() {}
-
 }

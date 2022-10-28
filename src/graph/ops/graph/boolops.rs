@@ -1,7 +1,7 @@
 //! functions that has a graph among its arguments that output a boolean value
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::edge::miscops::node_ids;
-use crate::graph::traits::edge::Edge;
+use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node;
@@ -50,7 +50,7 @@ where
 pub fn is_adjacent_of<G, E>(g: &G, e1: &E, e2: &E) -> bool
 where
     G: Graph,
-    E: Edge,
+    E: EdgeTrait,
 {
     if !is_in(g, e1) {
         panic!("{e1} not in {g}");
@@ -71,7 +71,7 @@ where
 pub fn is_node_incident<G, E, N>(g: &G, e: &E, n: &N) -> bool
 where
     G: Graph,
-    E: Edge,
+    E: EdgeTrait,
     N: Node,
 {
     if !is_in(g, e) {
@@ -103,6 +103,21 @@ mod tests {
         h1.insert(String::from("my"), vec![String::from("data")]);
         Edge::undirected(e_id.to_string(), n1, n2, h1)
     }
+    fn mk_g1() -> Graph {
+        let e1 = mk_uedge("n1", "n2", "e1");
+        let e2 = mk_uedge("n2", "n3", "e1");
+        let mut nset = HashSet::new();
+        nset.insert(e1.start().clone());
+        nset.insert(e1.end().clone());
+        nset.insert(e2.start().clone());
+        nset.insert(e2.end().clone());
+        let mut h1 = HashMap::new();
+        h1.insert(String::from("my"), vec![String::from("data")]);
+        let mut h2 = HashSet::new();
+        h2.insert(e1);
+        h2.insert(e2);
+        Graph::new("g1".to_string(), nset, h2, h1)
+    }
     #[test]
     fn test_is_empty_true() {
         let edges = HashSet::new();
@@ -117,9 +132,18 @@ mod tests {
         assert!(!is_empty(&g));
     }
 
-    #[ignore]
     #[test]
-    fn test_is_in() {}
+    fn test_is_in_true() {
+        let g1 = mk_g1();
+        let n1 = mk_node("n1");
+        assert!(is_in(&g1, &n1));
+    }
+    #[test]
+    fn test_is_in_false() {
+        let g1 = mk_g1();
+        let n1 = mk_node("n55");
+        assert!(!is_in(&g1, &n1));
+    }
 
     #[ignore]
     #[test]
@@ -128,4 +152,8 @@ mod tests {
     #[ignore]
     #[test]
     fn test_is_node_incident() {}
+
+    #[ignore]
+    #[test]
+    fn test_is_neighbor_of() {}
 }
