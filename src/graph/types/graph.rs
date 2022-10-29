@@ -15,6 +15,8 @@ use uuid::Uuid;
 use std::hash::{Hash, Hasher};
 
 /// Basic graph type which implements the relative [trait](GraphTrait)
+/// Formally defined as a set with two members which are also sets,
+/// see Diestel 2017, p. 2
 #[derive(Debug, Eq, PartialEq)]
 pub struct Graph {
     /// graph identifier required for [GraphObject] trait
@@ -61,6 +63,7 @@ impl GraphTrait for Graph {
 }
 
 impl Graph {
+    /// constructor for the [Graph] object
     pub fn new(
         graph_id: String,
         nodes: HashSet<Node>,
@@ -74,6 +77,17 @@ impl Graph {
             graph_data,
         }
     }
+    /// empty constructor.
+    /// Creates an empty graph that has no edge and vertex.
+    pub fn empty(graph_id: &str) -> Graph {
+        Graph {
+            graph_id: graph_id.to_string(),
+            edges: HashSet::new(),
+            nodes: HashSet::new(),
+            graph_data: HashMap::new(),
+        }
+    }
+    /// construct [Graph] from graph like object with borrowing
     pub fn from_graphish_ref<T: GraphTrait>(g: &T) -> Graph {
         Graph {
             graph_id: g.id().clone(),
@@ -82,6 +96,7 @@ impl Graph {
             edges: g.edges().clone(),
         }
     }
+    /// construct [Graph] from graph like object with move
     pub fn from_graphish<T: GraphTrait>(g: T) -> Graph {
         Graph {
             graph_id: g.id().clone(),
@@ -90,6 +105,7 @@ impl Graph {
             edges: g.edges().clone(),
         }
     }
+    /// construct [Graph] from [Edge] set
     pub fn from_edgeset(edges: HashSet<Edge>) -> Graph {
         let mut nodes = HashSet::new();
         for edge in &edges {
@@ -103,6 +119,7 @@ impl Graph {
             edges,
         }
     }
+    /// construct [Graph] from [Edge] and [Node] sets.
     pub fn from_edge_node_set(edges: HashSet<Edge>, nodes: HashSet<Node>) -> Graph {
         let mut mnodes = nodes;
         for edge in &edges {
@@ -116,7 +133,8 @@ impl Graph {
             edges,
         }
     }
-    /// we filter `edges` based on `nodes` before initializing the [Graph]
+    /// construct [Graph] from [Edge] and [Node] sets.
+    /// we filter `edges` based on `nodes` before initializing the [Graph].
     pub fn based_on_node_set(edges: HashSet<Edge>, nodes: HashSet<Node>) -> Graph {
         let mut medges = HashSet::new();
         for edge in &edges {

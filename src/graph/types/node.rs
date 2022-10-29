@@ -8,7 +8,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
-// implements graph object trait
+/// Node object.
+/// Formally defined as a member/point/vertex of a graph, see Diestel 2017, p.2
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Node {
     node_id: String,
@@ -16,22 +17,34 @@ pub struct Node {
 }
 
 impl Node {
+    /// constructor for Node object
     pub fn new(nid: String, ndata: HashMap<String, Vec<String>>) -> Node {
         Node {
             node_id: nid,
             node_data: ndata,
         }
     }
+    /// constructor for node like objects that implement node trait with borrowing
     pub fn from_nodish_ref<T: NodeTrait>(n: &T) -> Node {
         Node {
             node_id: n.id().clone(),
             node_data: n.data().clone(),
         }
     }
+
+    /// constructor for node like objects that implement node trait with move
     pub fn from_nodish<T: NodeTrait>(n: T) -> Node {
         Node {
             node_id: n.id().clone(),
             node_data: n.data().clone(),
+        }
+    }
+    /// empty constructor
+    pub fn empty(nid: &str) -> Node {
+        let ndata: HashMap<String, Vec<String>> = HashMap::new();
+        Node {
+            node_id: nid.to_string(),
+            node_data: ndata,
         }
     }
 }

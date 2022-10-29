@@ -9,6 +9,8 @@ use std::fmt;
 
 use std::hash::{Hash, Hasher};
 
+/// Edge object.
+/// Formally defined as set with two elements, see Diestel 2017, p. 2
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Edge {
     edge_id: String,
@@ -60,6 +62,7 @@ impl EdgeTrait for Edge {
 }
 
 impl Edge {
+    /// edge constructor
     pub fn new(
         eid: String,
         snode: Node,
@@ -75,6 +78,7 @@ impl Edge {
             edge_data: e_data,
         }
     }
+    /// undirected edge constructor
     pub fn undirected(
         eid: String,
         snode: Node,
@@ -89,6 +93,7 @@ impl Edge {
             edge_data: e_data,
         }
     }
+    /// directed edge constructor
     pub fn directed(
         eid: String,
         snode: Node,
@@ -103,6 +108,7 @@ impl Edge {
             edge_data: e_data,
         }
     }
+    /// a generic constructor for edge like objects with burrowing
     pub fn from_edgish_ref<T: EdgeTrait>(e: &T) -> Edge {
         Edge {
             edge_id: e.id().clone(),
@@ -112,6 +118,7 @@ impl Edge {
             edge_type: e.has_type().clone(),
         }
     }
+    /// a generic constructor for edge like objects with move
     pub fn from_edgish<T: EdgeTrait>(e: T) -> Edge {
         Edge {
             edge_id: e.id().clone(),
@@ -119,6 +126,24 @@ impl Edge {
             start_node: e.start().clone(),
             end_node: e.end().clone(),
             edge_type: e.has_type().clone(),
+        }
+    }
+    /// empty edge constructor.
+    pub fn empty(
+        edge_id: &str,
+        edge_type: EdgeType,
+        start_node_id: &str,
+        end_node_id: &str,
+    ) -> Edge {
+        let n1 = Node::empty(start_node_id);
+        let n2 = Node::empty(end_node_id);
+        let h: HashMap<String, Vec<String>> = HashMap::new();
+        Edge {
+            edge_id: edge_id.to_string(),
+            edge_type,
+            start_node: n1,
+            end_node: n2,
+            edge_data: h,
         }
     }
 }

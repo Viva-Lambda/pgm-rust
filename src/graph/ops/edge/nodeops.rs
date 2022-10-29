@@ -4,6 +4,7 @@ use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::types::edge::Edge;
 use crate::graph::types::node::Node;
 
+/// get the opposite node from edge
 pub fn get_other<'a>(e: &'a Edge, n: &Node) -> &'a Node {
     let nid: &String = n.id();
     let start = e.start();
@@ -15,9 +16,7 @@ pub fn get_other<'a>(e: &'a Edge, n: &Node) -> &'a Node {
     } else if eid == nid {
         e.start()
     } else {
-        let this_edge = dbg!(e);
-        let this_node = dbg!(n);
-        panic!("{n} does not belong to this {this_edge}");
+        panic!("{n} does not belong to this {e}");
     }
 }
 

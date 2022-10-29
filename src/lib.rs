@@ -3,6 +3,11 @@
 #![deny(missing_docs)]
 #![deny(missing_doc_code_examples)]
 
-mod factor;
-mod graph;
-mod pgm;
+/// factors defining random variable relations
+pub mod factor;
+
+/// graph theoretical structures
+pub mod graph;
+
+/// probabilistic graphs
+pub mod pgm;

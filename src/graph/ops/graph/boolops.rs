@@ -7,6 +7,7 @@ use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node;
 use std::collections::HashSet;
 
+/// check if graph is empty
 pub fn is_empty<G: Graph>(g: &G) -> bool {
     g.vertices().is_empty()
 }
@@ -43,10 +44,39 @@ where
     false
 }
 
-/// Check if two edges are adjacent
+/// Check if two edges are adjacent.
+///
+/// # Description
+/// Adjaceny of edges is defined as having an end in common see, Diestel p. 3
+///
+/// # Args
 /// - e1 an edge like object
 /// - e2 an edge like object
 /// - g a graph like object
+
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::ops::graph::boolops::is_adjacent_of;
+/// use std::collections::HashSet;
+/// let n1 = Node::empty("n1");
+/// let n2 = Node::empty("n2");
+/// let n3 = Node::empty("n3");
+/// let n4 = Node::empty("n4");
+/// let e1 = Edge::empty("e1", EdgeType::Undirected, "n1", "n2");
+/// let e2 = Edge::empty("e2", EdgeType::Undirected, "n1", "n3");
+/// let e3 = Edge::empty("e3", EdgeType::Undirected, "n3", "n4");
+/// let mut edges = HashSet::from([e1.clone(), e2.clone(), e3.clone()]);
+/// let mut nodes = HashSet::from([n1.clone(), n2.clone(), n3.clone(), n4.clone()]);
+/// let g = Graph::from_edge_node_set(edges, nodes);
+/// is_adjacent_of(&g, &e1, &e2); // true
+/// is_adjacent_of(&g, &e1, &e3); // false
+/// ```
+/// # References
+/// Diestel R. Graph Theory. 2017.
 pub fn is_adjacent_of<G, E>(g: &G, e1: &E, e2: &E) -> bool
 where
     G: Graph,
@@ -57,6 +87,9 @@ where
     }
     if !is_in(g, e2) {
         panic!("{e2} not in {g}");
+    }
+    if e1.id() == e2.id() {
+        return false;
     }
     let e1_ns = node_ids(e1);
     let e2_ns = node_ids(e2);
@@ -88,7 +121,9 @@ mod tests {
 
     use super::*;
     //
+    use crate::graph::traits::edge::Edge as EdgeTrait;
     use crate::graph::types::edge::Edge;
+    use crate::graph::types::edgetype::EdgeType;
     use crate::graph::types::graph::Graph;
     use crate::graph::types::node::Node;
     use std::collections::HashMap;
@@ -105,12 +140,13 @@ mod tests {
     }
     fn mk_g1() -> Graph {
         let e1 = mk_uedge("n1", "n2", "e1");
-        let e2 = mk_uedge("n2", "n3", "e1");
+        let e2 = mk_uedge("n2", "n3", "e2");
         let mut nset = HashSet::new();
         nset.insert(e1.start().clone());
         nset.insert(e1.end().clone());
         nset.insert(e2.start().clone());
         nset.insert(e2.end().clone());
+        nset.insert(mk_node("n4"));
         let mut h1 = HashMap::new();
         h1.insert(String::from("my"), vec![String::from("data")]);
         let mut h2 = HashSet::new();
@@ -145,13 +181,32 @@ mod tests {
         assert!(!is_in(&g1, &n1));
     }
 
-    #[ignore]
     #[test]
-    fn test_is_adjacent_of() {}
+    fn test_is_adjacent_of_true() {
+        let g = mk_g1();
+        let e2 = mk_uedge("n2", "n3", "e2"); // some edge
+        let e1 = mk_uedge("n1", "n2", "e1"); // some other edge sharing a node
+        assert!(is_adjacent_of(&g, &e1, &e2));
+    }
 
-    #[ignore]
     #[test]
-    fn test_is_node_incident() {}
+    fn test_is_adjacent_of_false() {
+        let g = mk_g1();
+        let e2 = mk_uedge("n2", "n3", "e2"); // some edge
+        let e1 = mk_uedge("n4", "n1", "e1"); // some other edge sharing a node
+        assert!(!is_adjacent_of(&g, &e1, &e2));
+    }
+
+    #[test]
+    fn test_is_node_incident() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let e1 = Edge::empty("e1", EdgeType::Undirected, "n1", "n2");
+        let e2 = Edge::empty("e2", EdgeType::Undirected, "n1", "n1");
+        let g = mk_g1();
+        assert!(is_node_incident(&g, &e1, &n1));
+        assert!(!is_node_incident(&g, &e2, &n2));
+    }
 
     #[ignore]
     #[test]

@@ -4,6 +4,7 @@ use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 use std::collections::HashSet;
 
+/// extract node identifiers from a `e`
 pub fn node_ids<E: EdgeTrait>(e: &E) -> HashSet<String> {
     let mut hset = HashSet::new();
     hset.insert(e.start().id().clone());

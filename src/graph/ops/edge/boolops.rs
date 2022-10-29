@@ -4,6 +4,8 @@ use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
 
+
+/// check if given `n` is start node of `e`
 pub fn is_start<N, E>(e: &E, n: &N) -> bool
 where
     N: NodeTrait,
@@ -11,6 +13,7 @@ where
 {
     e.start().id() == n.id()
 }
+/// check if given `n` is end node of `e`
 pub fn is_end<N, E>(e: &E, n: &N) -> bool
 where
     N: NodeTrait,
@@ -19,6 +22,7 @@ where
     e.end().id() == n.id()
 }
 
+/// check if given `n` is belongs to `e`
 pub fn is_endvertice<N, E>(e: &E, n: &N) -> bool
 where
     N: NodeTrait,
