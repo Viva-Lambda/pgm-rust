@@ -98,9 +98,39 @@ where
 }
 
 /// Check if a node and edge is incident
-/// - n a node like object
-/// - e an edge like object
-/// - g a graph like object
+/// # Description
+/// Incidence is defined as vertex `v` is a member of edge `e`, see Diestel,
+/// p.2
+///
+/// # Args
+/// - n a node like object which implements [Node] trait
+/// - e an edge like object which implements [Edge] trait
+/// - g a graph like object which implements [Graph] trait
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::ops::graph::boolops::is_node_incident;
+/// use std::collections::HashSet;
+/// let n1 = Node::empty("n1");
+/// let n2 = Node::empty("n2");
+/// let n3 = Node::empty("n3");
+/// let n4 = Node::empty("n4");
+/// let e1 = Edge::empty("e1", EdgeType::Undirected, "n1", "n2");
+/// let e2 = Edge::empty("e2", EdgeType::Undirected, "n1", "n3");
+/// let e3 = Edge::empty("e3", EdgeType::Undirected, "n3", "n4");
+/// let mut edges = HashSet::from([e1.clone(), e2.clone(), e3.clone()]);
+/// let mut nodes = HashSet::from([n1.clone(), n2.clone(), n3.clone(), n4.clone()]);
+/// let g = Graph::from_edge_node_set(edges, nodes);
+/// is_node_incident(&g, &e1, &n2); // true
+/// is_node_incident(&g, &e1, &n3); // false
+/// ```
+///
+/// # References
+/// Diestel R. Graph Theory. 2017.
 pub fn is_node_incident<G, E, N>(g: &G, e: &E, n: &N) -> bool
 where
     G: Graph,
