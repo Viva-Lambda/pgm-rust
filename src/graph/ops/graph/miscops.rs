@@ -1,7 +1,8 @@
 //! functions that has a graph among its arguments that output a value
 
-use crate::graph::ops::edge::miscops::node_ids;
+use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::traits::graph::Graph;
+use crate::graph::traits::graph_obj::GraphObject;
 use std::collections::HashMap;
 use std::option::Option;
 use std::vec::Vec;
@@ -14,9 +15,8 @@ pub fn to_edgelist<G: Graph>(g: &G) -> HashMap<String, Option<Vec<String>>> {
     for node in g.vertices() {
         let mut n_es: Vec<String> = Vec::new();
         for edge in g.edges() {
-            let n_ids = node_ids(edge);
-            if n_ids.contains(node.id()) {
-                n_es.push(edge.id().clone());
+            if is_endvertice(edge, node) {
+                n_es.push(edge.id().to_string());
             }
         }
         let nid = node.id().clone();

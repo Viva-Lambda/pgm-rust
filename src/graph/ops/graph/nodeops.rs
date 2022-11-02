@@ -1,19 +1,23 @@
 ///
 use crate::graph::traits::graph::Graph;
-use crate::graph::traits::node::Node;
+use crate::graph::traits::node::Node as NodeTrait;
+use crate::graph::types::node::Node;
 use std::collections::HashSet;
 
+/*
 /// for directed edges we assume neighbor is 'm in n -> m'.
 /// for undirected edges we assume neighbor is 'm,k in k -> n & n -> m'
-pub fn neighbors_of<G, N>(g: &'a G, n: &'a N) -> HashSet<&'a Node>
+pub fn neighbors_of<'a, G, N>(g: &'a G, n: &'a N) -> HashSet<&'a Node>
 where
     G: Graph,
-    N: Node,
+    N: NodeTrait,
 {
     let mut neighbors = HashSet::new();
 
     // check is in
+    neighbours
 }
+*/
 
 #[cfg(tests)]
 mod tests {
