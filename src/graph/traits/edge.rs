@@ -12,5 +12,5 @@ pub trait Edge: GraphObject {
     /// end node of the edge
     fn end(&self) -> &Node;
     /// type [Directed], [Undirected] of the edge
-    fn has_type(&self) -> EdgeType;
+    fn has_type(&self) -> &EdgeType;
 }

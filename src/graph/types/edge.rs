@@ -56,8 +56,8 @@ impl EdgeTrait for Edge {
     fn end(&self) -> &Node {
         &self.end_node
     }
-    fn has_type(&self) -> EdgeType {
-        self.edge_type.clone()
+    fn has_type(&self) -> &EdgeType {
+        &self.edge_type
     }
 }
 
@@ -182,7 +182,7 @@ mod tests {
     #[test]
     fn test_has_type() {
         let e = mk_uedge();
-        assert_eq!(e.has_type(), EdgeType::Undirected);
+        assert_eq!(e.has_type(), &EdgeType::Undirected);
     }
     #[test]
     fn test_start() {
