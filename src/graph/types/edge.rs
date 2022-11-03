@@ -9,22 +9,28 @@ use std::fmt;
 
 use std::hash::{Hash, Hasher};
 
+/// Edge info object.
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct EdgeInfo {
+    edge_id: String,
+    edge_data: HashMap<String, Vec<String>>,
+    edge_type: EdgeType,
+}
+
 /// Edge object.
 /// Formally defined as set with two elements, see Diestel 2017, p. 2
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct Edge {
-    edge_id: String,
-    edge_data: HashMap<String, Vec<String>>,
-    edge_type: EdgeType,
+    info: EdgeInfo,
     start_node: Node,
     end_node: Node,
 }
 impl fmt::Display for Edge {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let eid = &self.edge_id;
+        let eid = &self.info.edge_id;
         let n1 = &self.start_node;
         let n2 = &self.end_node;
-        let et = &self.edge_type;
+        let et = &self.info.edge_type;
         write!(
             f,
             "Edge[ id: {}, start: {}, end: {}, type: {} ]",
@@ -35,17 +41,17 @@ impl fmt::Display for Edge {
 
 impl Hash for Edge {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.edge_id.hash(state);
+        self.info.edge_id.hash(state);
     }
 }
 
 impl GraphObject for Edge {
     fn id(&self) -> &String {
-        &self.edge_id
+        &self.info.edge_id
     }
 
     fn data(&self) -> &HashMap<String, Vec<String>> {
-        &self.edge_data
+        &self.info.edge_data
     }
 }
 
@@ -57,7 +63,7 @@ impl EdgeTrait for Edge {
         &self.end_node
     }
     fn has_type(&self) -> &EdgeType {
-        &self.edge_type
+        &self.info.edge_type
     }
 }
 
@@ -70,12 +76,15 @@ impl Edge {
         etype: EdgeType,
         e_data: HashMap<String, Vec<String>>,
     ) -> Edge {
-        Edge {
+        let info = EdgeInfo {
             edge_id: eid,
-            start_node: snode,
-            end_node: enode,
             edge_type: etype,
             edge_data: e_data,
+        };
+        Edge {
+            info,
+            start_node: snode,
+            end_node: enode,
         }
     }
     /// undirected edge constructor
@@ -85,12 +94,15 @@ impl Edge {
         enode: Node,
         e_data: HashMap<String, Vec<String>>,
     ) -> Edge {
-        Edge {
+        let info = EdgeInfo {
             edge_id: eid,
-            start_node: snode,
-            end_node: enode,
             edge_type: EdgeType::Undirected,
             edge_data: e_data,
+        };
+        Edge {
+            info,
+            start_node: snode,
+            end_node: enode,
         }
     }
     /// directed edge constructor
@@ -100,32 +112,41 @@ impl Edge {
         enode: Node,
         e_data: HashMap<String, Vec<String>>,
     ) -> Edge {
-        Edge {
+        let info = EdgeInfo {
             edge_id: eid,
-            start_node: snode,
-            end_node: enode,
             edge_type: EdgeType::Directed,
             edge_data: e_data,
+        };
+        Edge {
+            info,
+            start_node: snode,
+            end_node: enode,
         }
     }
     /// a generic constructor for edge like objects with burrowing
     pub fn from_edgish_ref<T: EdgeTrait>(e: &T) -> Edge {
-        Edge {
-            edge_id: e.id().clone(),
+        let info = EdgeInfo {
+            edge_id: e.id().to_string(),
+            edge_type: e.has_type().clone(),
             edge_data: e.data().clone(),
+        };
+        Edge {
+            info,
             start_node: e.start().clone(),
             end_node: e.end().clone(),
-            edge_type: e.has_type().clone(),
         }
     }
     /// a generic constructor for edge like objects with move
     pub fn from_edgish<T: EdgeTrait>(e: T) -> Edge {
-        Edge {
-            edge_id: e.id().clone(),
+        let info = EdgeInfo {
+            edge_id: e.id().to_string(),
+            edge_type: e.has_type().clone(),
             edge_data: e.data().clone(),
+        };
+        Edge {
+            info,
             start_node: e.start().clone(),
             end_node: e.end().clone(),
-            edge_type: e.has_type().clone(),
         }
     }
     /// empty edge constructor.
@@ -138,12 +159,15 @@ impl Edge {
         let n1 = Node::empty(start_node_id);
         let n2 = Node::empty(end_node_id);
         let h: HashMap<String, Vec<String>> = HashMap::new();
-        Edge {
+        let info = EdgeInfo {
             edge_id: edge_id.to_string(),
             edge_type,
+            edge_data: h,
+        };
+        Edge {
+            info,
             start_node: n1,
             end_node: n2,
-            edge_data: h,
         }
     }
 }

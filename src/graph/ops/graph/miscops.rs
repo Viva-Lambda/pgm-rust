@@ -10,7 +10,7 @@ use std::vec::Vec;
 /// create an edge list representation of graph
 
 /// for each node we register all the edges
-pub fn to_edgelist<G: Graph>(g: &G) -> HashMap<String, Option<Vec<String>>> {
+pub fn to_adjacencylist<G: Graph>(g: &G) -> HashMap<String, Option<Vec<String>>> {
     let mut elist: HashMap<String, Option<Vec<String>>> = HashMap::new();
     for node in g.vertices() {
         let mut n_es: Vec<String> = Vec::new();

@@ -23,6 +23,9 @@ pub struct Graph {
     graph_id: String,
     /// graph data required for [GraphObject] trait
     graph_data: HashMap<String, Vec<String>>,
+
+    /// internal representation of graph data
+    gdata: HashMap<Node, (GraphObject, String, EdgeType)>,
     /// edges belonging to the graph
     edges: HashSet<Edge>,
     /// node belonging to the graph
