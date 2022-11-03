@@ -87,6 +87,14 @@ impl Edge {
             end_node: enode,
         }
     }
+    /// construct edge from an edge info and nodes
+    pub fn from_info(info: EdgeInfo, start_node: Node, end_node: Node) -> Edge {
+        Edge {
+            info,
+            start_node,
+            end_node,
+        }
+    }
     /// undirected edge constructor
     pub fn undirected(
         eid: String,

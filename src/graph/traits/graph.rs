@@ -10,10 +10,10 @@ use std::collections::HashSet;
 pub trait Graph: GraphObject {
     /// outputs a [Node] set.
     /// a [Node] can constructed anything that implements the Node trait
-    fn vertices(&self) -> &HashSet<Node>;
+    fn vertices(&self) -> HashSet<&Node>;
 
     /// outputs an [Edge] set.
     /// an [Edge] can constructed anything that implements the Edge trait
-    fn edges(&self) -> &HashSet<Edge>;
+    fn edges(&self) -> HashSet<&Edge>;
 }
 //

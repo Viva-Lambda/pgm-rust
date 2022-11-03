@@ -25,12 +25,12 @@ where
         if e.id() == eid {
             return true;
         }
-        let estart = e.start().clone();
+        let estart = e.start();
         if estart.id() == eid {
             return true;
         }
         ns.insert(estart);
-        let eend = e.end().clone();
+        let eend = e.end();
         if eend.id() == eid {
             return true;
         }
