@@ -146,6 +146,61 @@ where
     is_endvertice(e, n)
 }
 
+/// Checks if given nodes are neighbors
+/// # Description
+/// Neighborhood is described as adjacent vertices, meaning that if an edge is
+/// composed of `{x, y}` vertices than those vertices are neighbors. Notice
+/// that this definition does not take into account the orientation of the
+/// edge, see Diestel, p. 3.
+///
+/// # Args
+/// - g: anything that implements [Graph] trait
+/// - n1: anything that implements [Node] trait
+/// - n2: anything that implements [Node] trait
+/// - returns: true if  `n1` and `n2` are neighbors as defined above.
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::ops::graph::boolops::is_neighbor_of;
+/// use std::collections::HashSet;
+/// let n1 = Node::empty("n1");
+/// let n2 = Node::empty("n2");
+/// let n3 = Node::empty("n3");
+/// let n4 = Node::empty("n4");
+/// let e1 = Edge::empty("e1", EdgeType::Undirected, "n1", "n2");
+/// let e2 = Edge::empty("e2", EdgeType::Undirected, "n2", "n3");
+/// let mut edges = HashSet::from([e1.clone(), e2.clone()]);
+/// let mut nodes = HashSet::from([n1.clone(), n2.clone(), n3.clone(), n4.clone()]);
+/// let g = Graph::from_edge_node_set(edges, nodes);
+/// is_neighbor_of(&g, &n1, &n2); // true
+/// is_neighbor_of(&g, &n1, &n3); // false
+/// ```
+
+pub fn is_neighbor_of<G, N>(g: &G, n1: &N, n2: &N) -> bool
+where
+    G: Graph,
+    N: Node,
+{
+    if !is_in(g, n1) {
+        panic!("{n1} not in {g}");
+    }
+    if !is_in(g, n2) {
+        panic!("{n2} not in {g}");
+    }
+    for e in g.edges() {
+        let c1 = is_endvertice(e, n1);
+        let c2 = is_endvertice(e, n2);
+        if c1 && c2 {
+            return true;
+        }
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -238,7 +293,19 @@ mod tests {
         assert!(!is_node_incident(&g, &e2, &n2));
     }
 
-    #[ignore]
     #[test]
-    fn test_is_neighbor_of() {}
+    fn test_is_neighbor_of_true() {
+        let g1 = mk_g1();
+        let n2 = mk_node("n2");
+        let n3 = mk_node("n3");
+        assert!(is_neighbor_of(&g1, &n2, &n3));
+    }
+
+    #[test]
+    fn test_is_neighbor_of_false() {
+        let g1 = mk_g1();
+        let n1 = mk_node("n1");
+        let n3 = mk_node("n3");
+        assert!(!is_neighbor_of(&g1, &n1, &n3));
+    }
 }
