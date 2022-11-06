@@ -1,26 +1,136 @@
+use crate::graph::ops::edge::boolops::is_endvertice;
+use crate::graph::ops::edge::nodeops::get_other;
+use crate::graph::ops::graph::boolops::is_in;
 ///
 use crate::graph::traits::graph::Graph;
 use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::types::node::Node;
 use std::collections::HashSet;
 
-/*
-/// for directed edges we assume neighbor is 'm in n -> m'.
-/// for undirected edges we assume neighbor is 'm,k in k -> n & n -> m'
-pub fn neighbors_of<'a, G, N>(g: &'a G, n: &'a N) -> HashSet<&'a Node>
+/// Find the neighbors of a given node.
+/// # Description
+/// Given a nodish object in a graphish object, find neighboring nodes to
+/// nodish object. For the definition of neighbor, see Diestel, p. 3.
+///
+/// # Args
+/// - n: something that implements [NodeTrait] trait
+/// - g: something that implements [Graph] trait
+/// - returns: a set of nodes that are neighbors of `n`
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::graph::nodeops::neighbors_of;
+/// use std::collections::HashMap;
+/// use std::collections::HashSet;
+///
+/// fn mk_node(n_id: &str) -> Node {
+///     Node::empty(n_id)
+/// }
+/// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
+///     let mut hs: HashSet<Node> = HashSet::new();
+///     for n in ns {
+///         hs.insert(mk_node(n));
+///     }
+///     hs
+/// }
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// fn mk_g1() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n2", "n3", "e2");
+///     let e3 = mk_uedge("n2", "n4", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g1".to_string(), nset, h2, h1)
+/// }
+///
+/// let g = mk_g1();
+/// let n1 = mk_node("n1");
+/// let n2 = mk_node("n2");
+/// let ns = neighbors_of(&g, &n2);
+/// let n3 = mk_node("n3");
+/// let n4 = mk_node("n4");
+/// let mut comps_t = HashSet::new();
+/// comps_t.insert(&n3);
+/// comps_t.insert(&n4);
+/// let mut comps_f = HashSet::new();
+/// comps_f.insert(&n1);
+/// ns == comps_t;// true
+/// ns == comps_f;// false
+/// ```
+/// # References
+/// Diestel R. Graph Theory. 2017.
+pub fn neighbors_of<'a, 'b, G, N>(g: &'a G, n: &'b N) -> HashSet<&'a Node>
 where
     G: Graph,
     N: NodeTrait,
 {
+    // check if node is in graph
+    if !is_in(g, n) {
+        panic!("{n} not in {g}");
+    }
     let mut neighbors = HashSet::new();
-
+    for e in g.edges() {
+        if is_endvertice(e, n) {
+            let n2 = get_other(e, n);
+            neighbors.insert(n2);
+        }
+    }
     // check is in
-    neighbours
+    neighbors
 }
-*/
 
-#[cfg(tests)]
+#[cfg(test)]
 mod tests {
+
+    use super::*;
+    use crate::graph::types::edge::Edge;
+    use crate::graph::types::edgetype::EdgeType;
+    use crate::graph::types::graph::Graph;
+    use crate::graph::types::node::Node;
+    use std::collections::HashMap;
+
+    fn mk_node(n_id: &str) -> Node {
+        Node::empty(n_id)
+    }
+    fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
+        let mut hs: HashSet<Node> = HashSet::new();
+        for n in ns {
+            hs.insert(mk_node(n));
+        }
+        hs
+    }
+    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+        Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+    }
+    fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+        let mut hs = HashSet::new();
+        for e in es {
+            hs.insert(e);
+        }
+        hs
+    }
+    fn mk_g1() -> Graph {
+        let e1 = mk_uedge("n1", "n3", "e1");
+        let e2 = mk_uedge("n2", "n3", "e2");
+        let e3 = mk_uedge("n2", "n4", "e3");
+        let nset = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
+        let h1 = HashMap::new();
+        let h2 = mk_edges(vec![e1, e2, e3]);
+        Graph::new("g1".to_string(), nset, h2, h1)
+    }
 
     #[ignore]
     #[test]
@@ -34,7 +144,27 @@ mod tests {
     #[test]
     fn test_vertices_of() {}
 
-    #[ignore]
     #[test]
-    fn test_neighbors_of() {}
+    fn test_neighbors_of_true() {
+        let g = mk_g1();
+        let n2 = mk_node("n2");
+        let ns = neighbors_of(&g, &n2);
+        let n3 = mk_node("n3");
+        let n4 = mk_node("n4");
+        let mut comps = HashSet::new();
+        comps.insert(&n3);
+        comps.insert(&n4);
+        assert_eq!(ns, comps);
+    }
+
+    #[test]
+    fn test_neighbors_of_false() {
+        let g = mk_g1();
+        let n2 = mk_node("n2");
+        let n1 = mk_node("n1");
+        let ns = neighbors_of(&g, &n2);
+        let mut comps = HashSet::new();
+        comps.insert(&n1);
+        assert_ne!(ns, comps);
+    }
 }

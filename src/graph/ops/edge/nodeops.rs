@@ -1,11 +1,15 @@
 //! Functions that has an [Edge] among arguments that output a [Node]
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph_obj::GraphObject;
+use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::types::edge::Edge;
 use crate::graph::types::node::Node;
 
 /// get the opposite node from edge
-pub fn get_other<'a>(e: &'a Edge, n: &Node) -> &'a Node {
+pub fn get_other<'a, 'b, N>(e: &'a Edge, n: &'b N) -> &'a Node
+where
+    N: NodeTrait,
+{
     let nid: &String = n.id();
     let start = e.start();
     let sid = start.id();

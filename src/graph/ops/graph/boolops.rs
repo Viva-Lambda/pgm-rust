@@ -179,6 +179,9 @@ where
 /// is_neighbor_of(&g, &n1, &n2); // true
 /// is_neighbor_of(&g, &n1, &n3); // false
 /// ```
+/// # References
+/// Diestel R. Graph Theory. 2017.
+
 
 pub fn is_neighbor_of<G, N>(g: &G, n1: &N, n2: &N) -> bool
 where
