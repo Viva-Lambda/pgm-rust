@@ -3,6 +3,7 @@ use crate::graph::ops::edge::nodeops::get_other;
 use crate::graph::ops::graph::boolops::is_in;
 ///
 use crate::graph::traits::graph::Graph;
+use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::types::node::Node;
 use std::collections::HashSet;
@@ -92,6 +93,19 @@ where
     neighbors
 }
 
+/// get vertices using their identifier
+pub fn vertex_by_id<'a, G>(g: &'a G, vid: &str) -> &'a Node
+where
+    G: Graph,
+{
+    for n in g.vertices() {
+        if n.id() == vid {
+            return n;
+        }
+    }
+    panic!("vertex with id: {vid} not in graph {g}");
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -132,17 +146,12 @@ mod tests {
         Graph::new("g1".to_string(), nset, h2, h1)
     }
 
-    #[ignore]
     #[test]
-    fn test_get_nodes() {}
-
-    #[ignore]
-    #[test]
-    fn test_vertex_by_id() {}
-
-    #[ignore]
-    #[test]
-    fn test_vertices_of() {}
+    fn test_vertex_by_id() {
+        let g = mk_g1();
+        let n2 = mk_node("n2");
+        assert_eq!(&n2, vertex_by_id(&g, "n2"));
+    }
 
     #[test]
     fn test_neighbors_of_true() {

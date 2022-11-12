@@ -12,7 +12,37 @@ pub fn is_empty<G: Graph>(g: &G) -> bool {
     g.vertices().is_empty()
 }
 
-/// check if given graph object is in graph
+/// Check if given graph object is in graph
+///
+/// # Description
+/// This applies to anything that implements [Graph] trait and [GraphObject]
+/// trait. We first iterate over edges and then over nodes.
+/// # Args
+/// - g something that implements [Graph] trait
+/// - element something that implements [GraphObject] trait
+
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::ops::graph::boolops::is_in;
+/// use std::collections::HashSet;
+/// let n1 = Node::empty("n1");
+/// let n2 = Node::empty("n2");
+/// let n3 = Node::empty("n3");
+/// let n4 = Node::empty("n4");
+/// let n5 = Node::empty("n5");
+/// let e1 = Edge::empty("e1", EdgeType::Undirected, "n1", "n2");
+/// let e2 = Edge::empty("e2", EdgeType::Undirected, "n1", "n3");
+/// let e3 = Edge::empty("e3", EdgeType::Undirected, "n3", "n4");
+/// let mut edges = HashSet::from([e1.clone(), e2.clone(), e3.clone()]);
+/// let mut nodes = HashSet::from([n1.clone(), n2.clone(), n3.clone(), n4.clone()]);
+/// let g = Graph::from_edge_node_set(edges, nodes);
+/// is_in(&g, &e1); // true
+/// is_in(&g, &n5); // false
+/// ```
 
 pub fn is_in<G, T>(g: &G, element: &T) -> bool
 where
@@ -181,8 +211,6 @@ where
 /// ```
 /// # References
 /// Diestel R. Graph Theory. 2017.
-
-
 pub fn is_neighbor_of<G, N>(g: &G, n1: &N, n2: &N) -> bool
 where
     G: Graph,

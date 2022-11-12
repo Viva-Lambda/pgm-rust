@@ -6,6 +6,7 @@ use crate::graph::types::edge::Edge;
 use crate::graph::types::node::Node;
 
 /// get the opposite node from edge
+/// # Description
 pub fn get_other<'a, 'b, N>(e: &'a Edge, n: &'b N) -> &'a Node
 where
     N: NodeTrait,
