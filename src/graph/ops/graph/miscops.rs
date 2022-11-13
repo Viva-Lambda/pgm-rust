@@ -29,6 +29,21 @@ pub fn to_adjacencylist<'a, G: Graph>(g: &'a G) -> HashMap<&'a str, Option<HashS
     elist
 }
 
+/// obtain graph object using its identifier
+pub fn by_id<'a, G, T, F>(g: &'a G, id: &str, f: F) -> &'a T
+where
+    G: Graph,
+    T: GraphObject,
+    F: Fn(&'a G) -> HashSet<&'a T>,
+{
+    for h in f(g) {
+        if h.id() == id {
+            return h;
+        }
+    }
+    panic!("{id} not contained in {g}");
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
