@@ -184,13 +184,6 @@ mod tests {
 
     use super::*; // brings in the parent scope to current module scope
 
-    fn mk_dedge() -> Edge {
-        let n1 = Node::new(String::from("m1"), HashMap::new());
-        let n2 = Node::new(String::from("m2"), HashMap::new());
-        let mut h1 = HashMap::new();
-        h1.insert(String::from("my"), vec![String::from("data")]);
-        Edge::directed(String::from("medge"), n1, n2, h1)
-    }
     fn mk_uedge() -> Edge {
         let n1 = Node::new(String::from("m1"), HashMap::new());
         let n2 = Node::new(String::from("m2"), HashMap::new());

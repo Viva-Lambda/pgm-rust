@@ -5,7 +5,6 @@ use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::types::edge::Edge;
-use crate::graph::types::edge::EdgeInfo;
 use crate::graph::types::node::Node;
 use std::collections::HashMap;
 use std::collections::HashSet;

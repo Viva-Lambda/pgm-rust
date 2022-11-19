@@ -1,9 +1,9 @@
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::edge::nodeops::get_other;
 use crate::graph::ops::graph::boolops::is_in;
+use crate::graph::ops::graph::miscops::by_id;
 ///
 use crate::graph::traits::graph::Graph;
-use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::types::node::Node;
 use std::collections::HashSet;
@@ -94,16 +94,63 @@ where
 }
 
 /// get vertices using their identifier
+/// # Description
+/// Given an identifier get its corresponding node
+///
+/// # Args
+/// - g: something that implements [Graph] trait
+/// - vid: string reference
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::graph::nodeops::vertex_by_id;
+/// use std::collections::HashMap;
+/// use std::collections::HashSet;
+///
+/// fn mk_node(n_id: &str) -> Node {
+///     Node::empty(n_id)
+/// }
+/// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
+///     let mut hs: HashSet<Node> = HashSet::new();
+///     for n in ns {
+///         hs.insert(mk_node(n));
+///     }
+///     hs
+/// }
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// fn mk_g1() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n2", "n3", "e2");
+///     let e3 = mk_uedge("n2", "n4", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g1".to_string(), nset, h2, h1)
+/// }
+///
+/// let g = mk_g1();
+/// let n1 = mk_node("n1");
+/// vertex_by_id(&g, "n1") == &n1; // true
+/// ```
 pub fn vertex_by_id<'a, G>(g: &'a G, vid: &str) -> &'a Node
 where
     G: Graph,
 {
-    for n in g.vertices() {
-        if n.id() == vid {
-            return n;
-        }
-    }
-    panic!("vertex with id: {vid} not in graph {g}");
+    let f = |mg: &'a G| -> HashSet<&'a Node> { mg.vertices() };
+    by_id(g, vid, f)
 }
 
 #[cfg(test)]
