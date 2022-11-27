@@ -299,5 +299,69 @@ mod tests {
     }
 
     #[test]
-    fn test_get_subgraph_by_vertices() {}
+    fn test_get_subgraph_by_vertices_default_edge_policy() {
+        let g1 = mk_g1();
+        let n1 = mk_node("n1");
+        let n2 = mk_node("n2");
+        let n4 = mk_node("n4");
+        let mut nrefset = HashSet::new();
+        nrefset.insert(&n1);
+        nrefset.insert(&n2);
+        nrefset.insert(&n4);
+        let nrefset2 = nrefset.clone();
+        let mut erefset = HashSet::new();
+        let e1 = mk_uedge("n2", "n4", "e3");
+        erefset.insert(&e1);
+        // let opt: Option<dyn Fn(&Edge, &HashSet<&Node>) -> bool> = None;
+        let opt: Option<Box<dyn Fn(&Edge, &HashSet<&Node>) -> bool>> = None;
+        // let opt = None;
+        let result: (HashSet<&Node>, HashSet<&Edge>) = get_subgraph_by_vertices(&g1, nrefset, opt);
+        let (nodes, edges) = result;
+        assert_eq!(nodes, nrefset2);
+
+        //
+        assert_eq!(edges, erefset);
+    }
+
+    #[test]
+    fn test_get_subgraph_by_vertices_inclusive_edge_policy() {
+        let g1 = mk_g1();
+        let n1 = mk_node("n1");
+        let n3 = mk_node("n3");
+        let mut nrefset = HashSet::new();
+        nrefset.insert(&n1);
+        nrefset.insert(&n3);
+        let nrefset2 = nrefset.clone();
+        let mut erefset = HashSet::new();
+        let e1 = mk_uedge("n1", "n3", "e1");
+        let e2 = mk_uedge("n2", "n3", "e2");
+        erefset.insert(&e1);
+        erefset.insert(&e2);
+        // let opt: Option<dyn Fn(&Edge, &HashSet<&Node>) -> bool> = None;
+        let policy = |e: &Edge, vs: &HashSet<&Node>| -> bool {
+            let n1 = e.start();
+            let n2 = e.end();
+            let mut n1_c = false;
+            let mut n2_c = false;
+            for v in vs {
+                let vid = v.id();
+                if vid == n1.id() {
+                    n1_c = true;
+                }
+                if vid == n2.id() {
+                    n2_c = true;
+                }
+            }
+            n1_c || n2_c
+        };
+
+        let opt = Some(policy);
+        // let opt = None;
+        let result: (HashSet<&Node>, HashSet<&Edge>) = get_subgraph_by_vertices(&g1, nrefset, opt);
+        let (nodes, edges) = result;
+        assert_eq!(nodes, nrefset2);
+
+        //
+        assert_eq!(edges, erefset);
+    }
 }
