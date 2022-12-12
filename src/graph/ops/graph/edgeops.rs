@@ -270,7 +270,7 @@ where
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
 /// use pgm_rust::graph::types::edge::Edge;
-/// use pgm_rust::graph::ops::graph::edgeops::edges_by_vertices;
+/// use pgm_rust::graph::ops::graph::edgeops::edge_by_id;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
@@ -297,13 +297,10 @@ where
 ///     Graph::new("g1".to_string(), nset, h2, h1)
 /// }
 /// let g = mk_g1();
-/// let n1 = Node::empty("n1");
-/// let n2 = Node::empty("n2");
-/// let hset = edges_by_vertices(&g, &n1, &n2);
-/// let mut h2 = HashSet::new();
+/// let eid = "e1";
+/// let edge = edge_by_id(&g, &eid);
 /// let e1 = mk_uedge("n1", "n2", "e1");
-/// h2.insert(&e1);
-/// hset == h2; // true
+/// edge == (&e1); // true
 /// ```
 pub fn edge_by_id<'a, 'b, G>(g: &'a G, id: &str) -> &'a Edge
 where
@@ -383,7 +380,13 @@ mod tests {
 
     #[ignore]
     #[test]
-    fn test_edge_by_id() {}
+    fn test_edge_by_id() {
+        let g = mk_g1();
+        let eid = "e1";
+        let edge = edge_by_id(&g, &eid);
+        let e1 = mk_uedge("n1", "n2", "e1");
+        assert_eq!(&e1, edge);
+    }
 
     #[test]
     fn test_edge_by_vertices() {
