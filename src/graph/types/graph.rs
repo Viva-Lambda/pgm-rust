@@ -33,6 +33,12 @@ pub struct Graph {
 impl Hash for Graph {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.graph_id.hash(state);
+        for v in self.vertices() {
+            v.hash(state);
+        }
+        for e in self.edges() {
+            e.hash(state);
+        }
     }
 }
 
@@ -141,6 +147,15 @@ impl Graph {
     /// construct [Graph] from [Edge] and [Node] sets.
     pub fn from_edge_node_set(edges: HashSet<Edge>, nodes: HashSet<Node>) -> Graph {
         let (es, mset) = get_vertices(nodes, edges);
+        Graph {
+            graph_id: Uuid::new_v4().to_string(),
+            graph_data: HashMap::new(),
+            gdata: (es, mset),
+        }
+    }
+    /// construct [Graph] from [Edge] and [Node] reference sets
+    pub fn from_edge_node_refs_set(edges: HashSet<&Edge>, nodes: HashSet<&Node>) -> Graph {
+        let (es, mset) = get_vertices_from_refset(nodes, edges);
         Graph {
             graph_id: Uuid::new_v4().to_string(),
             graph_data: HashMap::new(),

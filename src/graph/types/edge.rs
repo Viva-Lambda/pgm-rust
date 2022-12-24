@@ -42,6 +42,8 @@ impl fmt::Display for Edge {
 impl Hash for Edge {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.info.edge_id.hash(state);
+        self.start_node.hash(state);
+        self.end_node.hash(state)
     }
 }
 
