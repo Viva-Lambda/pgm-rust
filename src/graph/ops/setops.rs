@@ -301,7 +301,7 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
     inter
 }
 /// union of nodes
-pub fn union_node<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
     let mut inter = HashSet::new();
     for i in a1.union(&a2) {
         // instead of moving the reference we copy the reference
@@ -317,7 +317,7 @@ pub fn union<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
 
     let es1 = a1.edges();
     let es2 = a2.edges();
-    let vs = union_node(vs1, vs2);
+    let vs = union_nodes(vs1, vs2);
     let es = union_edges(es1, es2);
     Graph::from_edge_node_refs_set(es, vs)
 }
@@ -489,7 +489,6 @@ mod tests {
         comp.insert(&n2);
         assert_eq!(einter, comp);
     }
-
     #[test]
     fn test_intersection_edges() {
         let g1 = mk_g1();
@@ -504,7 +503,6 @@ mod tests {
         comp.insert(&e1);
         assert_eq!(einter, comp);
     }
-
     #[test]
     fn test_intersection_nodes() {
         let g1 = mk_g1();
@@ -519,7 +517,6 @@ mod tests {
         comp.insert(&n1);
         assert_eq!(ninter, comp);
     }
-
     #[test]
     fn test_intersection() {
         let g1 = mk_g1();
@@ -534,5 +531,66 @@ mod tests {
         let comp_v = mk_node_refs(&vs);
         assert_eq!(inter_v, comp_v);
         assert_eq!(inter_e, comp_e);
+    }
+    // union tests
+    #[test]
+    fn test_union_edges() {
+        let g1 = mk_g1();
+        let g1es = g1.edges();
+        let e1 = mk_uedge("n1", "n3", "e1");
+        let e2 = mk_uedge("n20", "n30", "e2");
+        let e3 = mk_uedge("n20", "n40", "e3");
+        let evs = vec![e1.clone(), e2.clone(), e3.clone()];
+        let es = mk_edge_refs(&evs);
+        let eunion = union_edges(g1es.clone(), es);
+        let mut comp = HashSet::new();
+        for e in g1es {
+            comp.insert(e);
+        }
+        comp.insert(&e2);
+        comp.insert(&e3);
+        assert_eq!(eunion, comp);
+    }
+    #[test]
+    fn test_union_nodes() {
+        let g1 = mk_g1();
+        let g1ns = g1.vertices();
+        let n1 = mk_node("n1");
+        let n2 = mk_node("n20");
+        let n3 = mk_node("n30");
+        let nvs = vec![n1.clone(), n2.clone(), n3.clone()];
+        let ns = mk_node_refs(&nvs);
+        let nunion = union_nodes(g1ns.clone(), ns);
+        let mut comp = HashSet::new();
+        for n in g1ns {
+            comp.insert(n);
+        }
+        comp.insert(&n2);
+        comp.insert(&n3);
+        assert_eq!(nunion, comp);
+    }
+    #[test]
+    fn test_union() {
+        let g1 = mk_g1();
+        let g2 = mk_g2();
+        let g1uniong2 = union(&g1, &g2);
+        let union_v = g1uniong2.vertices();
+        let union_e = g1uniong2.edges();
+        let mut comp_v = HashSet::new();
+        for v in g1.vertices() {
+            comp_v.insert(v);
+        }
+        for v in g2.vertices() {
+            comp_v.insert(v);
+        }
+        let mut comp_e = HashSet::new();
+        for e in g1.edges() {
+            comp_e.insert(e);
+        }
+        for e in g2.edges() {
+            comp_e.insert(e);
+        }
+        assert_eq!(union_v, comp_v);
+        assert_eq!(union_e, comp_e);
     }
 }
