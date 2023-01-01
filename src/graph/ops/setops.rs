@@ -174,6 +174,7 @@ pub fn intersection_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -
 /// let n1 = Node::empty("n1");
 /// let n2 = Node::empty("n2");
 /// let n3 = Node::empty("n3");
+/// let n4 = Node::empty("n4");
 /// let n20 = Node::empty("n20");
 /// let n30 = Node::empty("n30");
 /// let nvs1 = vec![n1.clone(), n2, n3];
@@ -291,8 +292,55 @@ pub fn intersection<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     Graph::from_edge_node_refs_set(es, vs)
 }
 
-/// union of edges
-pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+/// Get the union of two node sets.
+///
+/// # Description
+/// Basic union operation that works with hash sets with members
+/// implementing the [Node] trait
+///
+/// # Args:
+/// a1: A hash set of things that implement [Node] trait
+/// a2: A hash set of things that implement [Node] trait
+/// returns: an set of things that implement [Node] trait.
+/// Notice that this operation conserves types of the members..
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::traits::node::Node as NodeTrait;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::union_nodes;
+/// use std::collections::HashSet;
+///
+/// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+///
+/// let n1 = Node::empty("n1");
+/// let n2 = Node::empty("n2");
+/// let n3 = Node::empty("n3");
+/// let n4 = Node::empty("n4");
+/// let n20 = Node::empty("n20");
+/// let n30 = Node::empty("n30");
+/// let nvs1 = vec![n1.clone(), n2, n3, n4];
+/// let nvs10 = vec![n1.clone(), n20.clone(), n30.clone()];
+/// let ns1 = mk_node_refs(&nvs1);
+/// let ns10 = mk_node_refs(&nvs10);
+/// let nunion = union_nodes(ns1.clone(), ns10);
+/// let mut comp = HashSet::new();
+/// for n in ns1 {
+///     comp.insert(n);
+/// }
+/// comp.insert(&n20);
+/// comp.insert(&n30);
+/// nunion == comp;
+/// ```
+pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
     let mut inter = HashSet::new();
     for i in a1.union(&a2) {
         // instead of moving the reference we copy the reference
@@ -300,8 +348,19 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
     }
     inter
 }
-/// union of nodes
-pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+/// union of two edges
+pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
+    let mut a1nodes = HashSet::new();
+    a1nodes.insert(a1.start());
+    a1nodes.insert(a1.end());
+    let mut a2nodes = HashSet::new();
+    a2nodes.insert(a2.start());
+    a2nodes.insert(a2.end());
+    union_nodes(a1nodes, a2nodes)
+}
+
+/// union of edges
+pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
     let mut inter = HashSet::new();
     for i in a1.union(&a2) {
         // instead of moving the reference we copy the reference
@@ -533,6 +592,16 @@ mod tests {
         assert_eq!(inter_e, comp_e);
     }
     // union tests
+
+    #[test]
+    fn test_union_edge() {
+        let e2 = mk_uedge("n20", "n30", "e2");
+        let e3 = mk_uedge("n20", "n40", "e3");
+        let eunion = union_edge(&e2, &e3);
+        let comp_v = vec![Node::empty("n20"), Node::empty("n30"), Node::empty("n40")];
+        let comp = mk_node_refs(&comp_v);
+        assert_eq!(eunion, comp);
+    }
     #[test]
     fn test_union_edges() {
         let g1 = mk_g1();
