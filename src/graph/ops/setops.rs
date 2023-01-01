@@ -142,7 +142,49 @@ pub fn intersection_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -
     }
     inter
 }
-/// intersection of nodes
+/// Get the intersection of two node sets.
+///
+/// # Description
+/// Basic intersection operation that works with hash sets with members
+/// implementing the [Node] trait
+///
+/// # Args:
+/// a1: A hash set of things that implement [Node] trait
+/// a2: A hash set of things that implement [Node] trait
+/// returns: an set of things that implement [Node] trait.
+/// Notice that this operation conserves types of the members..
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::traits::node::Node as NodeTrait;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::intersection_nodes;
+/// use std::collections::HashSet;
+///
+/// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+///
+/// let n1 = Node::empty("n1");
+/// let n2 = Node::empty("n2");
+/// let n3 = Node::empty("n3");
+/// let n20 = Node::empty("n20");
+/// let n30 = Node::empty("n30");
+/// let nvs1 = vec![n1.clone(), n2, n3];
+/// let nvs10 = vec![n1.clone(), n20, n30];
+/// let ns1 = mk_node_refs(&nvs1);
+/// let ns10 = mk_node_refs(&nvs10);
+/// let ninter = intersection_nodes(ns1, ns10);
+/// let mut comp = HashSet::new();
+/// comp.insert(&n1);
+/// ninter == comp;
+/// ```
 pub fn intersection_nodes<'a, T: NodeTrait>(
     a1: HashSet<&'a T>,
     a2: HashSet<&'a T>,
