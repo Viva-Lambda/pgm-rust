@@ -196,7 +196,89 @@ pub fn intersection_nodes<'a, T: NodeTrait>(
     }
     inter
 }
-/// intersection of graph
+/// Get the intersection of two graphs
+///
+/// # Description
+/// Basic intersection operation that works with things that
+/// implement the [Graph] trait
+///
+/// # Args:
+/// a1: Something that implements [Graph] trait
+/// a2: Something that implements [Graph] trait
+/// returns: a Graph object
+/// Notice that this operation returns a type.
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::intersection;
+/// use std::collections::HashSet;
+/// use std::collections::HashMap;
+///
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+
+/// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
+///     let mut hs: HashSet<Node> = HashSet::new();
+///     for n in ns {
+///         hs.insert(Node::empty(n));
+///     }
+///     hs
+/// }
+/// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+///
+/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+///
+/// fn mk_g1() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n2", "n3", "e2");
+///     let e3 = mk_uedge("n2", "n4", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g1".to_string(), nset, h2, h1)
+/// }
+/// fn mk_g2() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n20", "n30", "e2");
+///     let e3 = mk_uedge("n20", "n40", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n20", "n30"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g2".to_string(), nset, h2, h1)
+/// }
+///
+/// let g1 = mk_g1();
+/// let g2 = mk_g2();
+/// let g1interg2 = intersection(&g1, &g2);
+/// let inter_v = g1interg2.vertices();
+/// let inter_e = g1interg2.edges();
+/// let mut comp_e = HashSet::new();
+/// let e1 = mk_uedge("n1", "n3", "e1");
+/// comp_e.insert(&e1);
+/// let vs = vec![Node::empty("n1"), Node::empty("n2"), Node::empty("n3")];
+/// let comp_v = mk_node_refs(&vs);
+/// inter_v == comp_v;
+/// inter_e == comp_e;
+///
+/// ```
 pub fn intersection<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     //
     let vs1 = a1.vertices();
