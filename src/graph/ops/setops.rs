@@ -7,19 +7,20 @@ use crate::graph::types::graph::Graph;
 use crate::graph::types::node::Node;
 use std::collections::HashSet;
 
-/// Get the intersection of two edges.
-///
-/// # Description
+/// # Intersection Operations
+
+/// ## Intersection of Two Edges
+/// ### Description
 /// Since the edges are defined as sets of vertices with two members, it is
 /// natural to define set theoretical operations for them as well
 ///
-/// # Args:
+/// ### Args
 /// a1: Something that implements [Edge] trait
 /// a2: Something that implements [Edge] trait
 /// returns: a node set. Notice that it takes anything that implements the
 /// edge trait, but returns a specific type.
 ///
-/// # Example
+/// ### Example
 /// ```
 /// use pgm_rust::graph::types::edge::Edge;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
@@ -57,19 +58,18 @@ where
     inters
 }
 
-/// Get the intersection of two edge sets.
-///
-/// # Description
+/// ## Intersection of Edge Sets
+/// ### Description
 /// Basic intersection operation that works with hash sets with members
 /// implementing the [Edge] trait
 ///
-/// # Args:
+/// ### Args
 /// a1: A hash set of things that implement [Edge] trait
 /// a2: A hash set of things that implement [Edge] trait
 /// returns: an set of things that implement [Edge] trait.
 /// Notice that this operation conserves types of the members..
 ///
-/// # Example
+/// ### Example
 /// ```
 /// use pgm_rust::graph::types::edge::Edge;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
@@ -142,19 +142,18 @@ pub fn intersection_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -
     }
     inter
 }
-/// Get the intersection of two node sets.
-///
-/// # Description
+/// ## Intersection of Node Sets
+/// ### Description
 /// Basic intersection operation that works with hash sets with members
 /// implementing the [Node] trait
 ///
-/// # Args:
+/// ### Args
 /// a1: A hash set of things that implement [Node] trait
 /// a2: A hash set of things that implement [Node] trait
 /// returns: an set of things that implement [Node] trait.
 /// Notice that this operation conserves types of the members..
 ///
-/// # Example
+/// ### Example
 /// ```
 /// use pgm_rust::graph::types::edge::Edge;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
@@ -197,19 +196,18 @@ pub fn intersection_nodes<'a, T: NodeTrait>(
     }
     inter
 }
-/// Get the intersection of two graphs
-///
-/// # Description
+/// ## Intersection of Two Graphs
+/// ### Description
 /// Basic intersection operation that works with things that
 /// implement the [Graph] trait
 ///
-/// # Args:
+/// ### Args
 /// a1: Something that implements [Graph] trait
 /// a2: Something that implements [Graph] trait
 /// returns: a Graph object
 /// Notice that this operation returns a type.
 ///
-/// # Example
+/// ### Example
 /// ```
 /// use pgm_rust::graph::types::edge::Edge;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
@@ -292,19 +290,19 @@ pub fn intersection<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     Graph::from_edge_node_refs_set(es, vs)
 }
 
-/// Get the union of two node sets.
-///
-/// # Description
+/// # Union Operations
+/// ## Union of Node Sets
+/// ### Description
 /// Basic union operation that works with hash sets with members
 /// implementing the [Node] trait
 ///
-/// # Args:
+/// ### Args
 /// a1: A hash set of things that implement [Node] trait
 /// a2: A hash set of things that implement [Node] trait
 /// returns: an set of things that implement [Node] trait.
 /// Notice that this operation conserves types of the members..
 ///
-/// # Example
+/// ### Example
 /// ```
 /// use pgm_rust::graph::types::edge::Edge;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
@@ -348,13 +346,13 @@ pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> 
     }
     inter
 }
-/// union of two edges
-/// # Description
+/// ## Union of Two Edges
+/// ### Description
 /// Produces a union of two edges. Since edges are defined to be
 /// set of nodes, see Diestel 2017, p.2, we can apply set operations
 /// to them.
 ///
-/// # Args
+/// ### Args
 ///
 /// - a1: something that implements the [Edge] trait.
 /// - a2: something that implements the [Edge] trait.
@@ -362,7 +360,7 @@ pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> 
 /// conserving operation. We output a specific type and not something that
 /// implements a node trait.
 ///
-/// # Example
+/// ### Example
 /// ```
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::types::edge::Edge;
@@ -399,20 +397,19 @@ pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
     union_nodes(a1nodes, a2nodes)
 }
 
-/// Get union of edge sets
-/// # Description
+/// ## Union of Edge Sets
+/// ### Description
 /// We unite the two sets whose members implement [Edge] trait.
 /// TODO: There should be an option to output a node set as output
 ///
-/// # Args
+/// ### Args
 ///
 /// - a1: set of things that implement the [Edge] trait.
 /// - a2: set of things that implement the [Edge] trait.
 /// - returns: a set of things that implement the [Edge] trait.
 /// Notice that this is a type conserving operation.
 ///
-/// # Example
-///
+/// ### Example
 /// ```
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::types::edge::Edge;
@@ -481,18 +478,18 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
     }
     inter
 }
-/// Get union of graph
-/// # Description
+/// ## Union of Graph
+/// ### Description
 /// Get the union of two things implementing the [Graph] trait
 ///
-/// # Args
+/// ### Args
 ///
 /// - a1: something that implements the [Graph] trait
 /// - a2: something that implements the [Graph] trait
 /// - returns: a [Graph] type.
 /// Notice that this operation does not conserve types.
 ///
-/// # Example
+/// ### Example
 /// ```
 /// use pgm_rust::graph::types::edge::Edge;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
@@ -572,9 +569,80 @@ pub fn union<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     Graph::from_edge_node_refs_set(es, vs)
 }
 
-/// difference
-/// difference of edges
-pub fn difference_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+/// # Difference Operations
+/// ## Difference of nodes
+/// ### Description
+/// Get the set difference of two node sets. Set difference is defined as
+/// `A \ B = {a: a \in A and a \not \in B}`
+///
+/// ### Args
+///
+/// - a1: a set of things that implement the [Node] trait.
+/// - a2: a set of things that implement the [Node] trait.
+/// - returns: a set of things that implement the [Node] trait.
+/// Notice that this is a type conserving operation.
+///
+/// ### Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::difference_nodes;
+/// use std::collections::HashSet;
+/// use std::collections::HashMap;
+///
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+/// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
+///     let mut hs: HashSet<Node> = HashSet::new();
+///     for n in ns {
+///         hs.insert(Node::empty(n));
+///     }
+///     hs
+/// }
+/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// fn mk_g1() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n2", "n3", "e2");
+///     let e3 = mk_uedge("n2", "n4", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g1".to_string(), nset, h2, h1)
+/// }
+/// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// let g1 = mk_g1();
+/// let g1ns = g1.vertices();
+/// let n1 = Node::empty("n1");
+/// let n2 = Node::empty("n20");
+/// let n3 = Node::empty("n30");
+/// let nvs = vec![n1.clone(), n2.clone(), n3.clone()];
+/// let ns = mk_node_refs(&nvs);
+/// let ndiff = difference_nodes(ns, g1ns.clone());
+/// let mut comp = HashSet::new();
+/// comp.insert(&n2);
+/// comp.insert(&n3);
+/// ndiff == comp;
+/// ```
+pub fn difference_nodes<'a, T: NodeTrait>(
+    a1: HashSet<&'a T>,
+    a2: HashSet<&'a T>,
+) -> HashSet<&'a T> {
     let mut inter = HashSet::new();
     for i in a1.difference(&a2) {
         // instead of moving the reference we copy the reference
@@ -582,8 +650,20 @@ pub fn difference_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> 
     }
     inter
 }
-/// difference of nodes
-pub fn difference_node<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+
+/// difference of two edges
+pub fn difference_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
+    let mut a1nodes = HashSet::new();
+    a1nodes.insert(a1.start());
+    a1nodes.insert(a1.end());
+    let mut a2nodes = HashSet::new();
+    a2nodes.insert(a2.start());
+    a2nodes.insert(a2.end());
+    difference_nodes(a1nodes, a2nodes)
+}
+/// Get difference of edge sets
+/// # Description
+pub fn difference_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
     let mut inter = HashSet::new();
     for i in a1.difference(&a2) {
         // instead of moving the reference we copy the reference
@@ -599,7 +679,7 @@ pub fn difference<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
 
     let es1 = a1.edges();
     let es2 = a2.edges();
-    let vs = difference_node(vs1, vs2);
+    let vs = difference_nodes(vs1, vs2);
     let es = difference_edges(es1, es2);
     Graph::from_edge_node_refs_set(es, vs)
 }
@@ -853,4 +933,70 @@ mod tests {
         assert_eq!(union_v, comp_v);
         assert_eq!(union_e, comp_e);
     }
+    //#[test]
+    //fn test_difference_edge() {
+    //    let e2 = mk_uedge("n20", "n30", "e2");
+    //    let e3 = mk_uedge("n20", "n40", "e3");
+    //    let eunion = difference_edge(&e2, &e3);
+    //    let comp_v = vec![Node::empty("n20"), Node::empty("n30"), Node::empty("n40")];
+    //    let comp = mk_node_refs(&comp_v);
+    //    assert_eq!(eunion, comp);
+    //}
+    //#[test]
+    //fn test_difference_edges() {
+    //    let g1 = mk_g1();
+    //    let g1es = g1.edges();
+    //    let e1 = mk_uedge("n1", "n3", "e1");
+    //    let e2 = mk_uedge("n20", "n30", "e2");
+    //    let e3 = mk_uedge("n20", "n40", "e3");
+    //    let evs = vec![e1.clone(), e2.clone(), e3.clone()];
+    //    let es = mk_edge_refs(&evs);
+    //    let eunion = difference_edges(g1es.clone(), es);
+    //    let mut comp = HashSet::new();
+    //    for e in g1es {
+    //        comp.insert(e);
+    //    }
+    //    comp.insert(&e2);
+    //    comp.insert(&e3);
+    //    assert_eq!(eunion, comp);
+    //}
+    #[test]
+    fn test_difference_nodes() {
+        let g1 = mk_g1();
+        let g1ns = g1.vertices();
+        let n1 = mk_node("n1");
+        let n2 = mk_node("n20");
+        let n3 = mk_node("n30");
+        let nvs = vec![n1.clone(), n2.clone(), n3.clone()];
+        let ns = mk_node_refs(&nvs);
+        let nunion = difference_nodes(ns, g1ns.clone());
+        let mut comp = HashSet::new();
+        comp.insert(&n2);
+        comp.insert(&n3);
+        assert_eq!(nunion, comp);
+    }
+    //#[test]
+    //fn test_difference() {
+    //    let g1 = mk_g1();
+    //    let g2 = mk_g2();
+    //    let g1uniong2 = difference(&g1, &g2);
+    //    let difference_v = g1uniong2.vertices();
+    //    let difference_e = g1uniong2.edges();
+    //    let mut comp_v = HashSet::new();
+    //    for v in g1.vertices() {
+    //        comp_v.insert(v);
+    //    }
+    //    for v in g2.vertices() {
+    //        comp_v.insert(v);
+    //    }
+    //    let mut comp_e = HashSet::new();
+    //    for e in g1.edges() {
+    //        comp_e.insert(e);
+    //    }
+    //    for e in g2.edges() {
+    //        comp_e.insert(e);
+    //    }
+    //    assert_eq!(difference_v, comp_v);
+    //    assert_eq!(difference_e, comp_e);
+    //}
 }
