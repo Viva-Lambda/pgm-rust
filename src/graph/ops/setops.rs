@@ -349,6 +349,46 @@ pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> 
     inter
 }
 /// union of two edges
+/// # Description
+/// Produces a union of two edges. Since edges are defined to be
+/// set of nodes, see Diestel 2017, p.2, we can apply set operations
+/// to them.
+///
+/// # Args
+///
+/// - a1: something that implements the [Edge] trait.
+/// - a2: something that implements the [Edge] trait.
+/// - returns: a set of node references. Notice that this is not a type
+/// conserving operation. We output a specific type and not something that
+/// implements a node trait.
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::union_edge;
+/// use std::collections::HashSet;
+
+/// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+///
+/// let e2 = mk_uedge("n20", "n30", "e2");
+/// let e3 = mk_uedge("n20", "n40", "e3");
+/// let eunion = union_edge(&e2, &e3);
+/// let comp_v = vec![Node::empty("n20"), Node::empty("n30"), Node::empty("n40")];
+/// let comp = mk_node_refs(&comp_v);
+/// eunion == comp;
+/// ```
 pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
     let mut a1nodes = HashSet::new();
     a1nodes.insert(a1.start());
@@ -359,7 +399,80 @@ pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
     union_nodes(a1nodes, a2nodes)
 }
 
-/// union of edges
+/// Get union of edge sets
+/// # Description
+/// We unite the two sets whose members implement [Edge] trait.
+/// TODO: There should be an option to output a node set as output
+///
+/// # Args
+///
+/// - a1: set of things that implement the [Edge] trait.
+/// - a2: set of things that implement the [Edge] trait.
+/// - returns: a set of things that implement the [Edge] trait.
+/// Notice that this is a type conserving operation.
+///
+/// # Example
+///
+/// ```
+/// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::union_edges;
+/// use std::collections::HashSet;
+/// use std::collections::HashMap;
+
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+/// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
+///     let mut hs: HashSet<Node> = HashSet::new();
+///     for n in ns {
+///         hs.insert(Node::empty(n));
+///     }
+///     hs
+/// }
+/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// fn mk_edge_refs<'a>(es: &'a Vec<Edge>) -> HashSet<&'a Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// fn mk_g1() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n2", "n3", "e2");
+///     let e3 = mk_uedge("n2", "n4", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g1".to_string(), nset, h2, h1)
+/// }
+/// let g1 = mk_g1();
+/// let g1es = g1.edges();
+/// let e1 = mk_uedge("n1", "n3", "e1");
+/// let e2 = mk_uedge("n20", "n30", "e2");
+/// let e3 = mk_uedge("n20", "n40", "e3");
+/// let evs = vec![e1.clone(), e2.clone(), e3.clone()];
+/// let es = mk_edge_refs(&evs);
+/// let eunion = union_edges(g1es.clone(), es);
+/// let mut comp = HashSet::new();
+/// for e in g1es {
+///     comp.insert(e);
+/// }
+/// comp.insert(&e2);
+/// comp.insert(&e3);
+/// eunion == comp;
+/// ```
 pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
     let mut inter = HashSet::new();
     for i in a1.union(&a2) {
@@ -368,7 +481,85 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
     }
     inter
 }
-/// union of graph
+/// Get union of graph
+/// # Description
+/// Get the union of two things implementing the [Graph] trait
+///
+/// # Args
+///
+/// - a1: something that implements the [Graph] trait
+/// - a2: something that implements the [Graph] trait
+/// - returns: a [Graph] type.
+/// Notice that this operation does not conserve types.
+///
+/// # Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
+/// use pgm_rust::graph::types::graph::Graph;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::union;
+/// use std::collections::HashSet;
+/// use std::collections::HashMap;
+
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+/// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
+///     let mut hs: HashSet<Node> = HashSet::new();
+///     for n in ns {
+///         hs.insert(Node::empty(n));
+///     }
+///     hs
+/// }
+/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// fn mk_g1() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n2", "n3", "e2");
+///     let e3 = mk_uedge("n2", "n4", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g1".to_string(), nset, h2, h1)
+/// }
+/// fn mk_g2() -> Graph {
+///     let e1 = mk_uedge("n1", "n3", "e1");
+///     let e2 = mk_uedge("n20", "n30", "e2");
+///     let e3 = mk_uedge("n20", "n40", "e3");
+///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n20", "n30"]);
+///     let h1 = HashMap::new();
+///     let h2 = mk_edges(vec![e1, e2, e3]);
+///     Graph::new("g2".to_string(), nset, h2, h1)
+/// }
+/// let g1 = mk_g1();
+/// let g2 = mk_g2();
+/// let g1uniong2 = union(&g1, &g2);
+/// let union_v = g1uniong2.vertices();
+/// let union_e = g1uniong2.edges();
+/// let mut comp_v = HashSet::new();
+/// for v in g1.vertices() {
+///     comp_v.insert(v);
+/// }
+/// for v in g2.vertices() {
+///     comp_v.insert(v);
+/// }
+/// let mut comp_e = HashSet::new();
+/// for e in g1.edges() {
+///     comp_e.insert(e);
+/// }
+/// for e in g2.edges() {
+///     comp_e.insert(e);
+/// }
+/// union_v == comp_v;
+/// union_e == comp_e;
+/// ```
 pub fn union<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     //
     let vs1 = a1.vertices();
