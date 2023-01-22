@@ -5,6 +5,7 @@ pub use crate::graph::traits::graph_obj::GraphObject;
 pub use crate::graph::traits::node::Node as NodeTrait;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 
@@ -14,6 +15,13 @@ use std::hash::{Hash, Hasher};
 pub struct Node {
     node_id: String,
     node_data: HashMap<String, Vec<String>>,
+}
+
+/// Short hand for set of nodes
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Vertices<'a> {
+    /// node set field
+    pub vertex_set: HashSet<&'a Node>,
 }
 
 impl Node {

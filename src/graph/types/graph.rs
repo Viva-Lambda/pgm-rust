@@ -17,7 +17,7 @@ use std::hash::{Hash, Hasher};
 /// Basic graph type which implements the relative [trait](GraphTrait)
 /// Formally defined as a set with two members which are also sets,
 /// see Diestel 2017, p. 2
-#[derive(Debug, Eq, PartialEq)]
+#[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Graph {
     /// graph identifier required for [GraphObject] trait
     graph_id: String,

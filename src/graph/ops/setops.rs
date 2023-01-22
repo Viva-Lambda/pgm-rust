@@ -3,9 +3,13 @@
 use crate::graph::traits::edge::Edge;
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::node::Node as NodeTrait;
+use crate::graph::types::edge::Edge as EdgeT;
+use crate::graph::types::edge::Edges;
 use crate::graph::types::graph::Graph;
 use crate::graph::types::node::Node;
+use crate::graph::types::node::Vertices;
 use std::collections::HashSet;
+use std::ops::{Add, Sub};
 
 /// # Intersection Operations
 
@@ -26,6 +30,7 @@ use std::collections::HashSet;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::types::node::Vertices;
 /// use pgm_rust::graph::ops::setops::intersection_edge;
 /// use std::collections::HashSet;
 ///
@@ -36,12 +41,13 @@ use std::collections::HashSet;
 /// let e1 = mk_uedge("n1", "n2", "e1");
 /// let e2 = mk_uedge("n2", "n30", "e2");
 /// let einter = intersection_edge(&e1, &e2);
-/// let mut comp = HashSet::new();
+/// let mut comph = HashSet::new();
 /// let n2 = Node::empty("n2");
-/// comp.insert(&n2);
+/// comph.insert(&n2);
+/// let comp = Vertices {vertex_set: comph};
 /// einter == comp; // outputs true
 /// ```
-pub fn intersection_edge<'a, E>(a1: &'a E, a2: &'a E) -> HashSet<&'a Node>
+pub fn intersection_edge<'a, E>(a1: &'a E, a2: &'a E) -> Vertices<'a>
 where
     E: Edge,
 {
@@ -55,7 +61,7 @@ where
     for i in hset1.intersection(&hset2) {
         inters.insert(i.clone());
     }
-    inters
+    Vertices { vertex_set: inters }
 }
 
 /// ## Intersection of Edge Sets
@@ -496,7 +502,7 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
 /// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
-/// use pgm_rust::graph::ops::setops::union;
+/// use pgm_rust::graph::ops::setops::union_graph;
 /// use std::collections::HashSet;
 /// use std::collections::HashMap;
 
@@ -537,7 +543,7 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
 /// }
 /// let g1 = mk_g1();
 /// let g2 = mk_g2();
-/// let g1uniong2 = union(&g1, &g2);
+/// let g1uniong2 = union_graph(&g1, &g2);
 /// let union_v = g1uniong2.vertices();
 /// let union_e = g1uniong2.edges();
 /// let mut comp_v = HashSet::new();
@@ -557,7 +563,7 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
 /// union_v == comp_v;
 /// union_e == comp_e;
 /// ```
-pub fn union<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
+pub fn union_graph<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     //
     let vs1 = a1.vertices();
     let vs2 = a2.vertices();
@@ -567,6 +573,40 @@ pub fn union<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     let vs = union_nodes(vs1, vs2);
     let es = union_edges(es1, es2);
     Graph::from_edge_node_refs_set(es, vs)
+}
+// overload add for union
+impl<'a> Add for Vertices<'a> {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        Vertices {
+            vertex_set: union_nodes(self.vertex_set, other.vertex_set),
+        }
+    }
+}
+impl<'a> Add for Edges<'a> {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        Edges {
+            edge_set: union_edges(self.edge_set, other.edge_set),
+        }
+    }
+}
+impl Add for EdgeT {
+    type Output = HashSet<Node>;
+    fn add(self, other: Self) -> HashSet<Node> {
+        let nset = union_edge(&self, &other);
+        let mut hset = HashSet::new();
+        for n in nset {
+            hset.insert(n.clone());
+        }
+        hset
+    }
+}
+impl Add for Graph {
+    type Output = Self;
+    fn add(self, other: Self) -> Self {
+        union_graph(&self, &other)
+    }
 }
 
 /// # Difference Operations
@@ -828,6 +868,7 @@ pub fn contains<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::graph::traits::graph::Graph as GraphTrait;
     use crate::graph::types::edge::Edge;
     use crate::graph::types::edgetype::EdgeType;
     use crate::graph::types::graph::Graph;
@@ -895,9 +936,10 @@ mod tests {
         let e1 = mk_uedge("n1", "n2", "e1");
         let e2 = mk_uedge("n2", "n30", "e2");
         let einter = intersection_edge(&e1, &e2);
-        let mut comp = HashSet::new();
+        let mut comph = HashSet::new();
         let n2 = mk_node("n2");
-        comp.insert(&n2);
+        comph.insert(&n2);
+        let comp = Vertices { vertex_set: comph };
         assert_eq!(einter, comp);
     }
     #[test]
@@ -944,7 +986,6 @@ mod tests {
         assert_eq!(inter_e, comp_e);
     }
     // union tests
-
     #[test]
     fn test_union_edge() {
         let e2 = mk_uedge("n20", "n30", "e2");
@@ -991,10 +1032,10 @@ mod tests {
         assert_eq!(nunion, comp);
     }
     #[test]
-    fn test_union() {
+    fn test_union_graph() {
         let g1 = mk_g1();
         let g2 = mk_g2();
-        let g1uniong2 = union(&g1, &g2);
+        let g1uniong2 = union_graph(&g1, &g2);
         let union_v = g1uniong2.vertices();
         let union_e = g1uniong2.edges();
         let mut comp_v = HashSet::new();
@@ -1014,6 +1055,89 @@ mod tests {
         assert_eq!(union_v, comp_v);
         assert_eq!(union_e, comp_e);
     }
+
+    // add test start
+    #[test]
+    fn test_add_edge() {
+        let e2 = mk_uedge("n20", "n30", "e2");
+        let e3 = mk_uedge("n20", "n40", "e3");
+        let eunion = e2 + e3;
+        let comp_v = vec!["n20", "n30", "n40"];
+        let comp = mk_nodes(comp_v);
+        assert_eq!(eunion, comp);
+    }
+    #[test]
+    fn test_add_edges() {
+        let g1 = mk_g1();
+        let g1es = g1.edges();
+        let e1 = mk_uedge("n1", "n3", "e1");
+        let e2 = mk_uedge("n20", "n30", "e2");
+        let e3 = mk_uedge("n20", "n40", "e3");
+        let evs = vec![e1.clone(), e2.clone(), e3.clone()];
+        let es = mk_edge_refs(&evs);
+        let es_g1 = Edges {
+            edge_set: g1es.clone(),
+        };
+        let es_2 = Edges { edge_set: es };
+        let eunion = es_g1 + es_2;
+        let mut comph = HashSet::new();
+        for e in g1es {
+            comph.insert(e);
+        }
+        comph.insert(&e2);
+        comph.insert(&e3);
+        let comp = Edges { edge_set: comph };
+        assert_eq!(eunion, comp);
+    }
+    #[test]
+    fn test_add_nodes() {
+        let g1 = mk_g1();
+        let g1ns = g1.vertices();
+        let n1 = mk_node("n1");
+        let n2 = mk_node("n20");
+        let n3 = mk_node("n30");
+        let nvs = vec![n1.clone(), n2.clone(), n3.clone()];
+        let ns_1 = Vertices {
+            vertex_set: mk_node_refs(&nvs),
+        };
+        let ns_g1 = Vertices {
+            vertex_set: g1ns.clone(),
+        };
+        let nunion = ns_1 + ns_g1;
+        let mut comph = HashSet::new();
+        for n in g1ns {
+            comph.insert(n);
+        }
+        comph.insert(&n2);
+        comph.insert(&n3);
+        let comp = Vertices { vertex_set: comph };
+        assert_eq!(nunion, comp);
+    }
+    #[test]
+    fn test_add_graph() {
+        let g1 = mk_g1();
+        let g2 = mk_g2();
+        let g1uniong2 = g1.clone() + g2.clone();
+        let union_v = g1uniong2.vertices();
+        let union_e = g1uniong2.edges();
+        let mut comp_v = HashSet::new();
+        for v in g1.vertices() {
+            comp_v.insert(v);
+        }
+        for v in g2.vertices() {
+            comp_v.insert(v);
+        }
+        let mut comp_e = HashSet::new();
+        for e in g1.edges() {
+            comp_e.insert(e);
+        }
+        for e in g2.edges() {
+            comp_e.insert(e);
+        }
+        assert_eq!(union_v, comp_v);
+        assert_eq!(union_e, comp_e);
+    }
+
     #[test]
     fn test_difference_edge() {
         let e2 = mk_uedge("n20", "n30", "e2");

@@ -5,6 +5,7 @@ use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::types::edgetype::EdgeType;
 use crate::graph::types::node::Node;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::fmt;
 
 use std::hash::{Hash, Hasher};
@@ -24,6 +25,13 @@ pub struct Edge {
     info: EdgeInfo,
     start_node: Node,
     end_node: Node,
+}
+
+/// short hand for edge set
+#[derive(Debug, PartialEq, Eq, Clone)]
+pub struct Edges<'a> {
+    /// edge set content
+    pub edge_set: HashSet<&'a Edge>,
 }
 impl fmt::Display for Edge {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
