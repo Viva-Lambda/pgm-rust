@@ -651,7 +651,44 @@ pub fn difference_nodes<'a, T: NodeTrait>(
     inter
 }
 
-/// difference of two edges
+/// ## Difference of Two Edges
+/// ### Description
+/// Get the set difference of two edges. Set difference is defined as
+/// `A \ B = {a: a \in A and a \not \in B}`. This makes sense because the
+/// edges are defined as sets with two nodes
+///
+/// ### Args
+/// - a1: something that implements the [Edge] trait
+/// - a2: something that implements the [Edge] trait
+/// - returns: a set of nodes
+/// Notice that this operation does not conserve types.
+///
+/// ### Example
+///
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::difference_edge;
+/// use std::collections::HashSet;
+///
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+/// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+/// let e2 = mk_uedge("n20", "n30", "e2");
+/// let e3 = mk_uedge("n20", "n40", "e3");
+/// let ediff = difference_edge(&e2, &e3);
+/// let comp_v = vec![Node::empty("n30")];
+/// let comp = mk_node_refs(&comp_v);
+/// ediff == comp;
+/// ```
 pub fn difference_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
     let mut a1nodes = HashSet::new();
     a1nodes.insert(a1.start());
@@ -661,8 +698,52 @@ pub fn difference_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
     a2nodes.insert(a2.end());
     difference_nodes(a1nodes, a2nodes)
 }
-/// Get difference of edge sets
-/// # Description
+/// ## Difference of Two Edge Sets
+/// ### Description
+/// Get the set difference of two edge sets. Set difference is defined as
+/// `A \ B = {a: a \in A and a \not \in B}`. Two edges are considered equal if
+/// they have same nodes and same identifier.
+///
+/// ### Args
+/// - a1: set of something that implements the [Edge] trait
+/// - a2: set of something that implements the [Edge] trait
+/// - returns: a set of something that implements the [Edge] trait
+/// Notice that this operation conserve types.
+///
+/// ### Example
+/// ```
+/// use pgm_rust::graph::types::edge::Edge;
+/// use pgm_rust::graph::types::edgetype::EdgeType;
+/// use pgm_rust::graph::types::node::Node;
+/// use pgm_rust::graph::ops::setops::difference_edges;
+/// use std::collections::HashSet;
+///
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+/// }
+/// fn mk_edge_refs<'a>(es: &'a Vec<Edge>) -> HashSet<&'a Edge> {
+///     let mut hs = HashSet::new();
+///     for e in es {
+///         hs.insert(e);
+///     }
+///     hs
+/// }
+///
+/// let e1 = mk_uedge("n1", "n3", "e1");
+/// let e2 = mk_uedge("n20", "n30", "e2");
+/// let e3 = mk_uedge("n20", "n40", "e3");
+/// let evs1 = vec![e1.clone(), e2.clone(), e3.clone()];
+/// let es1 = mk_edge_refs(&evs1);
+/// let e4 = mk_uedge("n2", "n3", "e1");
+/// let e5 = mk_uedge("n20", "n30", "e2");
+/// let e6 = mk_uedge("n20", "n40", "e3");
+/// let evs2 = vec![e4.clone(), e5.clone(), e6.clone()];
+/// let es2 = mk_edge_refs(&evs2);
+/// let es_diff = difference_edges(es1, es2);
+/// let mut comp = HashSet::new();
+/// comp.insert(&e1);
+/// es_diff == comp;
+/// ```
 pub fn difference_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
     let mut inter = HashSet::new();
     for i in a1.difference(&a2) {
@@ -933,33 +1014,32 @@ mod tests {
         assert_eq!(union_v, comp_v);
         assert_eq!(union_e, comp_e);
     }
-    //#[test]
-    //fn test_difference_edge() {
-    //    let e2 = mk_uedge("n20", "n30", "e2");
-    //    let e3 = mk_uedge("n20", "n40", "e3");
-    //    let eunion = difference_edge(&e2, &e3);
-    //    let comp_v = vec![Node::empty("n20"), Node::empty("n30"), Node::empty("n40")];
-    //    let comp = mk_node_refs(&comp_v);
-    //    assert_eq!(eunion, comp);
-    //}
-    //#[test]
-    //fn test_difference_edges() {
-    //    let g1 = mk_g1();
-    //    let g1es = g1.edges();
-    //    let e1 = mk_uedge("n1", "n3", "e1");
-    //    let e2 = mk_uedge("n20", "n30", "e2");
-    //    let e3 = mk_uedge("n20", "n40", "e3");
-    //    let evs = vec![e1.clone(), e2.clone(), e3.clone()];
-    //    let es = mk_edge_refs(&evs);
-    //    let eunion = difference_edges(g1es.clone(), es);
-    //    let mut comp = HashSet::new();
-    //    for e in g1es {
-    //        comp.insert(e);
-    //    }
-    //    comp.insert(&e2);
-    //    comp.insert(&e3);
-    //    assert_eq!(eunion, comp);
-    //}
+    #[test]
+    fn test_difference_edge() {
+        let e2 = mk_uedge("n20", "n30", "e2");
+        let e3 = mk_uedge("n20", "n40", "e3");
+        let ediff = difference_edge(&e2, &e3);
+        let comp_v = vec![Node::empty("n30")];
+        let comp = mk_node_refs(&comp_v);
+        assert_eq!(ediff, comp);
+    }
+    #[test]
+    fn test_difference_edges() {
+        let e1 = mk_uedge("n1", "n3", "e1");
+        let e2 = mk_uedge("n20", "n30", "e2");
+        let e3 = mk_uedge("n20", "n40", "e3");
+        let evs1 = vec![e1.clone(), e2.clone(), e3.clone()];
+        let es1 = mk_edge_refs(&evs1);
+        let e4 = mk_uedge("n2", "n3", "e1");
+        let e5 = mk_uedge("n20", "n30", "e2");
+        let e6 = mk_uedge("n20", "n40", "e3");
+        let evs2 = vec![e4.clone(), e5.clone(), e6.clone()];
+        let es2 = mk_edge_refs(&evs2);
+        let es_diff = difference_edges(es1, es2);
+        let mut comp = HashSet::new();
+        comp.insert(&e1);
+        assert_eq!(es_diff, comp);
+    }
     #[test]
     fn test_difference_nodes() {
         let g1 = mk_g1();
