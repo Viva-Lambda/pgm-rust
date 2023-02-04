@@ -2,6 +2,10 @@
 
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph_obj::GraphObject;
+use crate::graph::traits::misc::SetOp;
+
+use crate::graph::ops::graph_obj::setops::set_op_graph_obj_set;
+use crate::graph::ops::graph_obj::setops::SetOpKind;
 use crate::graph::types::edgetype::EdgeType;
 use crate::graph::types::node::Node;
 use std::collections::HashMap;

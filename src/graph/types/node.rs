@@ -2,7 +2,11 @@
 
 // call the GraphObject trait
 pub use crate::graph::traits::graph_obj::GraphObject;
+use crate::graph::traits::misc::SetOp;
 pub use crate::graph::traits::node::Node as NodeTrait;
+
+use crate::graph::ops::graph_obj::setops::set_op_graph_obj_set;
+use crate::graph::ops::graph_obj::setops::SetOpKind;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -81,6 +85,24 @@ impl GraphObject for Node {
 }
 
 impl NodeTrait for Node {}
+
+impl SetOp for Node {
+    type Input = HashSet<Node>;
+    type Output = HashSet<Node>;
+
+    fn intersection(a: Self::Input, other: Self::Input) -> Self::Output {
+        set_op_graph_obj_set(&a, &other, SetOpKind::Intersection)
+    }
+    fn union(a: Self::Input, other: Self::Input) -> Self::Output {
+        set_op_graph_obj_set(&a, &other, SetOpKind::Union)
+    }
+    fn difference(a: Self::Input, other: Self::Input) -> Self::Output {
+        set_op_graph_obj_set(&a, &other, SetOpKind::Difference)
+    }
+    fn symmetric_difference(a: Self::Input, other: Self::Input) -> Self::Output {
+        set_op_graph_obj_set(&a, &other, SetOpKind::SymmetricDifference)
+    }
+}
 
 #[cfg(test)]
 mod tests {

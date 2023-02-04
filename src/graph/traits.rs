@@ -14,3 +14,6 @@ pub mod node;
 
 /// behaviors that defines an [Edge]
 pub mod edge;
+
+/// diverse behaviors that help with lib implementation
+pub mod misc;
