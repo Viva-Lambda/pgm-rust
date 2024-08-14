@@ -84,7 +84,11 @@ impl GraphObject for Node {
     }
 }
 
-impl NodeTrait for Node {}
+impl NodeTrait for Node {
+    fn create(nid: String, ndata: HashMap<String, Vec<String>>) -> Node {
+        Node::new(nid, ndata)
+    }
+}
 
 impl SetOp for Node {
     type Input = HashSet<Node>;
