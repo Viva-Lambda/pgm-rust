@@ -9,7 +9,7 @@ use crate::graph::types::graph::Graph;
 use crate::graph::types::node::Node;
 use crate::graph::types::node::Vertices;
 use std::collections::HashSet;
-use std::ops::{Add, Sub};
+use std::ops::Add;
 
 /// # Intersection Operations
 
@@ -59,7 +59,8 @@ where
     hset2.insert(a2.end());
     let mut inters = HashSet::new();
     for i in hset1.intersection(&hset2) {
-        inters.insert(i.clone());
+        let vref: &'a Node = i.clone();
+        inters.insert(vref);
     }
     Vertices { vertex_set: inters }
 }
@@ -144,7 +145,8 @@ pub fn intersection_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -
     let mut inter = HashSet::new();
     for i in a1.intersection(&a2) {
         // instead of moving the reference we copy the reference
-        inter.insert(i.clone());
+        let tref: &'a T = i.clone();
+        inter.insert(tref);
     }
     inter
 }
@@ -198,7 +200,8 @@ pub fn intersection_nodes<'a, T: NodeTrait>(
     let mut inter = HashSet::new();
     for i in a1.intersection(&a2) {
         // instead of moving the reference we copy the reference
-        inter.insert(i.clone());
+        let tref: &'a T = i.clone();
+        inter.insert(tref);
     }
     inter
 }
