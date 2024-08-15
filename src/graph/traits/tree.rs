@@ -1,9 +1,7 @@
 // tree trait
 use crate::graph::traits::edge::Edge;
 use crate::graph::traits::graph::Graph;
-use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node;
-use std::collections::HashMap;
 use std::collections::HashSet;
 
 /// a tree

@@ -20,3 +20,6 @@ pub mod misc;
 
 /// behaviors that defines a [Tree]
 pub mod tree;
+
+/// behaviors that defines a [Path]
+pub mod path;
