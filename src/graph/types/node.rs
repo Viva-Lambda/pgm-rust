@@ -1,9 +1,10 @@
 // graph node
 
 // call the GraphObject trait
-pub use crate::graph::traits::graph_obj::GraphObject;
+use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::misc::SetOp;
-pub use crate::graph::traits::node::Node as NodeTrait;
+use crate::graph::traits::node::Node as NodeTrait;
+use crate::graph::traits::node::VertexSet as VertexSetTrait;
 
 use crate::graph::ops::graph_obj::setops::set_op_graph_obj_set;
 use crate::graph::ops::graph_obj::setops::SetOpKind;
@@ -23,9 +24,26 @@ pub struct Node {
 
 /// Short hand for set of nodes
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Vertices<'a> {
+pub struct Vertices<N: NodeTrait> {
     /// node set field
-    pub vertex_set: HashSet<&'a Node>,
+    pub vertex_set: HashSet<N>,
+}
+impl<N: NodeTrait> VertexSetTrait<N> for Vertices<N> {
+    fn members(&self) -> HashSet<&N> {
+        let mut ms: HashSet<&N> = HashSet::new();
+        for v in &self.vertex_set {
+            ms.insert(v);
+        }
+        ms
+    }
+    fn create(vs: HashSet<&N>) -> Self {
+        let mut ms: HashSet<N> = HashSet::new();
+        for v in &vs {
+            let m: &N = v.clone();
+            ms.insert(m.clone());
+        }
+        Vertices { vertex_set: ms }
+    }
 }
 
 impl Node {

@@ -1,15 +1,13 @@
 //! Functions that has an [Edge] among arguments that output a boolean value
 use crate::graph::ops::edge::miscops::node_ids;
 use crate::graph::traits::edge::Edge as EdgeTrait;
-use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
-
 
 /// check if given `n` is start node of `e`
 pub fn is_start<N, E>(e: &E, n: &N) -> bool
 where
     N: NodeTrait,
-    E: EdgeTrait,
+    E: EdgeTrait<N>,
 {
     e.start().id() == n.id()
 }
@@ -17,7 +15,7 @@ where
 pub fn is_end<N, E>(e: &E, n: &N) -> bool
 where
     N: NodeTrait,
-    E: EdgeTrait,
+    E: EdgeTrait<N>,
 {
     e.end().id() == n.id()
 }
@@ -26,7 +24,7 @@ where
 pub fn is_endvertice<N, E>(e: &E, n: &N) -> bool
 where
     N: NodeTrait,
-    E: EdgeTrait,
+    E: EdgeTrait<N>,
 {
     let ids = node_ids(e);
     let nid: &String = &n.id();
@@ -42,7 +40,7 @@ mod tests {
     use crate::graph::types::node::Node;
     use std::collections::HashMap; // brings in the parent scope to current module scope
 
-    fn mk_uedge() -> Edge {
+    fn mk_uedge() -> Edge<Node> {
         let n1 = Node::new(String::from("m1"), HashMap::new());
         let n2 = Node::new(String::from("m2"), HashMap::new());
         let mut h1 = HashMap::new();

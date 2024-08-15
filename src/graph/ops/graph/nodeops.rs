@@ -2,10 +2,10 @@ use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::edge::nodeops::get_other;
 use crate::graph::ops::graph::boolops::is_in;
 use crate::graph::ops::graph::miscops::by_id;
+use crate::graph::traits::edge::Edge as EdgeTrait;
 ///
-use crate::graph::traits::graph::Graph;
+use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::node::Node as NodeTrait;
-use crate::graph::types::node::Node;
 use std::collections::HashSet;
 
 /// Find the neighbors of a given node.
@@ -37,24 +37,24 @@ use std::collections::HashSet;
 ///     }
 ///     hs
 /// }
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
 ///     }
 ///     hs
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let e3 = mk_uedge("n2", "n4", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 ///
 /// let g = mk_g1();
@@ -73,10 +73,11 @@ use std::collections::HashSet;
 /// ```
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn neighbors_of<'a, 'b, G, N>(g: &'a G, n: &'b N) -> HashSet<&'a Node>
+pub fn neighbors_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a N>
 where
-    G: Graph,
     N: NodeTrait,
+    E: EdgeTrait<N> + 'a,
+    G: GraphTrait<N, E>,
 {
     // check if node is in graph
     if !is_in(g, n) {
@@ -121,35 +122,37 @@ where
 ///     }
 ///     hs
 /// }
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
 ///     }
 ///     hs
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let e3 = mk_uedge("n2", "n4", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 ///
 /// let g = mk_g1();
 /// let n1 = mk_node("n1");
 /// vertex_by_id(&g, "n1") == &n1; // true
 /// ```
-pub fn vertex_by_id<'a, G>(g: &'a G, vid: &str) -> &'a Node
+pub fn vertex_by_id<'a, N, E, G>(g: &'a G, vid: &str) -> &'a N
 where
-    G: Graph,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
-    let f = |mg: &'a G| -> HashSet<&'a Node> { mg.vertices() };
+    let f = |mg: &'a G| -> HashSet<&'a N> { mg.vertices() };
     by_id(g, vid, f)
 }
 
@@ -173,24 +176,24 @@ mod tests {
         }
         hs
     }
-    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
         Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
     }
-    fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+    fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
         let mut hs = HashSet::new();
         for e in es {
             hs.insert(e);
         }
         hs
     }
-    fn mk_g1() -> Graph {
+    fn mk_g1() -> Graph<Node, Edge<Node>> {
         let e1 = mk_uedge("n1", "n3", "e1");
         let e2 = mk_uedge("n2", "n3", "e2");
         let e3 = mk_uedge("n2", "n4", "e3");
         let nset = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
         let h1 = HashMap::new();
         let h2 = mk_edges(vec![e1, e2, e3]);
-        Graph::new("g1".to_string(), nset, h2, h1)
+        Graph::new("g1".to_string(), h1, nset, h2)
     }
 
     #[test]

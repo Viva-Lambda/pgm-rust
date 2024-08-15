@@ -2,18 +2,21 @@
 
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::traits::edge::Edge as EdgeTrait;
-use crate::graph::traits::graph::Graph;
+use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
-use crate::graph::types::edge::Edge;
-use crate::graph::types::node::Node;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::option::Option;
 
 /// create an edge list representation of graph
 /// for each node we register all the edges
-pub fn to_adjacencylist<'a, G: Graph>(g: &'a G) -> HashMap<&'a str, Option<HashSet<&'a str>>> {
+pub fn to_adjacencylist<'a, N, E, G>(g: &'a G) -> HashMap<&str, Option<HashSet<&str>>>
+where
+    N: NodeTrait + 'a,
+    E: EdgeTrait<N> + 'a,
+    G: GraphTrait<N, E>,
+{
     let mut elist: HashMap<&str, Option<HashSet<&str>>> = HashMap::new();
     for node in g.vertices() {
         let mut n_es: HashSet<&str> = HashSet::new();
@@ -50,10 +53,10 @@ pub fn to_adjacencylist<'a, G: Graph>(g: &'a G) -> HashMap<&'a str, Option<HashS
 /// use std::collections::HashSet;
 /// fn mk_node(n_id: &str) -> Node {Node::empty(n_id)}
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
@@ -79,7 +82,7 @@ pub fn to_adjacencylist<'a, G: Graph>(g: &'a G) -> HashMap<&'a str, Option<HashS
 /// let nset = mk_nodes(vec!["a", "b", "f", "e"]);
 /// let h1 = HashMap::new();
 /// let h2 = mk_edges(vec![ae, af, ef]);
-/// let g1 = Graph::new("g1".to_string(), nset, h2, h1);
+/// let g1 = Graph::new("g1".to_string(), h1, nset, h2);
 /// let mut comp = HashMap::new();
 /// comp.insert((b.id(), b.id()), false);
 /// comp.insert((b.id(), e.id()), false);
@@ -100,7 +103,12 @@ pub fn to_adjacencylist<'a, G: Graph>(g: &'a G) -> HashMap<&'a str, Option<HashS
 /// let amat = to_adjmat(&g1);
 /// amat == comp; // true
 /// ```
-pub fn to_adjmat<'a, G: Graph>(g: &'a G) -> HashMap<(&'a String, &'a String), bool> {
+pub fn to_adjmat<'a, N, E, G>(g: &'a G) -> HashMap<(&'a String, &'a String), bool>
+where
+    N: NodeTrait + 'a,
+    E: EdgeTrait<N> + 'a,
+    G: GraphTrait<N, E>,
+{
     //
     let mut adjmat = HashMap::new();
     for e in g.edges() {
@@ -125,9 +133,11 @@ pub fn to_adjmat<'a, G: Graph>(g: &'a G) -> HashMap<(&'a String, &'a String), bo
 }
 
 /// obtain graph object using its identifier
-pub fn by_id<'a, G, T, F>(g: &'a G, id: &str, f: F) -> &'a T
+pub fn by_id<'a, N, E, G, T, F>(g: &'a G, id: &str, f: F) -> &'a T
 where
-    G: Graph,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
     T: GraphObject,
     F: Fn(&'a G) -> HashSet<&'a T>,
 {
@@ -148,17 +158,18 @@ where
 /// - ns: a set of things that implement [Node] trait
 /// - edge_policy: defines how to handle edges given a node. By default, we
 /// conserve edges whose incident nodes are a subset of `ns`
-pub fn get_subgraph_by_vertices<'a, G, N, F>(
+pub fn get_subgraph_by_vertices<'a, G, N, E, F>(
     g: &'a G,
     ns: HashSet<&N>,
     edge_policy: Option<F>,
-) -> (HashSet<&'a Node>, HashSet<&'a Edge>)
+) -> (HashSet<&'a N>, HashSet<&'a E>)
 where
-    G: Graph,
     N: NodeTrait,
-    F: Fn(&'a Edge, &HashSet<&N>) -> bool,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
+    F: Fn(&'a E, &HashSet<&N>) -> bool,
 {
-    let policy = |e: &'a Edge, vs: &HashSet<&N>| -> bool {
+    let policy = |e: &'a E, vs: &HashSet<&N>| -> bool {
         match &edge_policy {
             Some(p) => p(e, vs),
             None => {
@@ -215,24 +226,24 @@ mod tests {
         }
         hs
     }
-    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
         Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
     }
-    fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+    fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
         let mut hs = HashSet::new();
         for e in es {
             hs.insert(e);
         }
         hs
     }
-    fn mk_g1() -> Graph {
+    fn mk_g1() -> Graph<Node, Edge<Node>> {
         let e1 = mk_uedge("n1", "n3", "e1");
         let e2 = mk_uedge("n2", "n3", "e2");
         let e3 = mk_uedge("n2", "n4", "e3");
         let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
         let h1 = HashMap::new();
         let h2 = mk_edges(vec![e1, e2, e3]);
-        Graph::new("g1".to_string(), nset, h2, h1)
+        Graph::new("g1".to_string(), h1, nset, h2)
     }
 
     fn mk_refset(es: Vec<&str>) -> HashSet<&str> {
@@ -276,7 +287,7 @@ mod tests {
         let nset = mk_nodes(vec!["a", "b", "f", "e"]);
         let h1 = HashMap::new();
         let h2 = mk_edges(vec![ae, af, ef]);
-        let g1 = Graph::new("g1".to_string(), nset, h2, h1);
+        let g1 = Graph::new("g1".to_string(), h1, nset, h2);
         let mut comp = HashMap::new();
         comp.insert((b.id(), b.id()), false);
         comp.insert((b.id(), e.id()), false);
@@ -313,9 +324,10 @@ mod tests {
         let e1 = mk_uedge("n2", "n4", "e3");
         erefset.insert(&e1);
         // let opt: Option<dyn Fn(&Edge, &HashSet<&Node>) -> bool> = None;
-        let opt: Option<Box<dyn Fn(&Edge, &HashSet<&Node>) -> bool>> = None;
+        let opt: Option<Box<dyn Fn(&Edge<Node>, &HashSet<&Node>) -> bool>> = None;
         // let opt = None;
-        let result: (HashSet<&Node>, HashSet<&Edge>) = get_subgraph_by_vertices(&g1, nrefset, opt);
+        let result: (HashSet<&Node>, HashSet<&Edge<Node>>) =
+            get_subgraph_by_vertices(&g1, nrefset, opt);
         let (nodes, edges) = result;
         assert_eq!(nodes, nrefset2);
 
@@ -338,7 +350,7 @@ mod tests {
         erefset.insert(&e1);
         erefset.insert(&e2);
         // let opt: Option<dyn Fn(&Edge, &HashSet<&Node>) -> bool> = None;
-        let policy = |e: &Edge, vs: &HashSet<&Node>| -> bool {
+        let policy = |e: &Edge<Node>, vs: &HashSet<&Node>| -> bool {
             let n1 = e.start();
             let n2 = e.end();
             let mut n1_c = false;
@@ -357,7 +369,8 @@ mod tests {
 
         let opt = Some(policy);
         // let opt = None;
-        let result: (HashSet<&Node>, HashSet<&Edge>) = get_subgraph_by_vertices(&g1, nrefset, opt);
+        let result: (HashSet<&Node>, HashSet<&Edge<Node>>) =
+            get_subgraph_by_vertices(&g1, nrefset, opt);
         let (nodes, edges) = result;
         assert_eq!(nodes, nrefset2);
 

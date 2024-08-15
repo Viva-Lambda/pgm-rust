@@ -5,6 +5,7 @@ use crate::graph::traits::node::Node;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::types::edgetype::EdgeType;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 /// Promotes anything that implements [GraphObject] trait to [Edge]
 pub trait Edge<NodeType: Node>: GraphObject {
@@ -24,4 +25,14 @@ pub trait Edge<NodeType: Node>: GraphObject {
         _: NodeType,
         _: EdgeType,
     ) -> Self;
+}
+
+/// Defines basic behaviour for containers of [Edge] a very thin wrapper
+/// around HashSet<Edge>
+pub trait EdgeSet<N: Node, E: Edge<N>> {
+    /// access members of the container
+    fn members(&self) -> HashSet<&E>;
+
+    /// construct container from hash set
+    fn create(_: HashSet<&E>) -> Self;
 }

@@ -2,13 +2,18 @@
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::edge::miscops::node_ids;
 use crate::graph::traits::edge::Edge as EdgeTrait;
-use crate::graph::traits::graph::Graph;
+use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject;
-use crate::graph::traits::node::Node;
+use crate::graph::traits::node::Node as NodeTrait;
 use std::collections::HashSet;
 
 /// check if graph is empty
-pub fn is_empty<G: Graph>(g: &G) -> bool {
+pub fn is_empty<N, E, G>(g: &G) -> bool
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
+{
     g.vertices().is_empty()
 }
 
@@ -44,9 +49,11 @@ pub fn is_empty<G: Graph>(g: &G) -> bool {
 /// is_in(&g, &n5); // false
 /// ```
 
-pub fn is_in<G, T>(g: &G, element: &T) -> bool
+pub fn is_in<N, E, G, T>(g: &G, element: &T) -> bool
 where
-    G: Graph,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
     T: GraphObject,
 {
     let eid = element.id();
@@ -107,10 +114,11 @@ where
 /// ```
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn is_adjacent_of<G, E>(g: &G, e1: &E, e2: &E) -> bool
+pub fn is_adjacent_of<N, E, G>(g: &G, e1: &E, e2: &E) -> bool
 where
-    G: Graph,
-    E: EdgeTrait,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
     if !is_in(g, e1) {
         panic!("{e1} not in {g}");
@@ -161,11 +169,11 @@ where
 ///
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn is_node_incident<G, E, N>(g: &G, e: &E, n: &N) -> bool
+pub fn is_node_incident<N, E, G>(g: &G, e: &E, n: &N) -> bool
 where
-    G: Graph,
-    E: EdgeTrait,
-    N: Node,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
     if !is_in(g, e) {
         panic!("{e} not in {g}");
@@ -211,10 +219,11 @@ where
 /// ```
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn is_neighbor_of<G, N>(g: &G, n1: &N, n2: &N) -> bool
+pub fn is_neighbor_of<N, E, G>(g: &G, n1: &N, n2: &N) -> bool
 where
-    G: Graph,
-    N: Node,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
     if !is_in(g, n1) {
         panic!("{n1} not in {g}");
@@ -237,7 +246,6 @@ mod tests {
 
     use super::*;
     //
-    use crate::graph::traits::edge::Edge as EdgeTrait;
     use crate::graph::types::edge::Edge;
     use crate::graph::types::edgetype::EdgeType;
     use crate::graph::types::graph::Graph;
@@ -247,14 +255,14 @@ mod tests {
     fn mk_node(n_id: &str) -> Node {
         Node::new(n_id.to_string(), HashMap::new())
     }
-    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
         let n1 = mk_node(n1_id);
         let n2 = mk_node(n2_id);
         let mut h1 = HashMap::new();
         h1.insert(String::from("my"), vec![String::from("data")]);
         Edge::undirected(e_id.to_string(), n1, n2, h1)
     }
-    fn mk_g1() -> Graph {
+    fn mk_g1() -> Graph<Node, Edge<Node>> {
         let e1 = mk_uedge("n1", "n2", "e1");
         let e2 = mk_uedge("n2", "n3", "e2");
         let mut nset = HashSet::new();
@@ -268,11 +276,11 @@ mod tests {
         let mut h2 = HashSet::new();
         h2.insert(e1);
         h2.insert(e2);
-        Graph::new("g1".to_string(), nset, h2, h1)
+        Graph::new("g1".to_string(), h1, nset, h2)
     }
     #[test]
     fn test_is_empty_true() {
-        let edges = HashSet::new();
+        let edges: HashSet<Edge<Node>> = HashSet::new();
         let g = Graph::from_edgeset(edges);
         assert!(is_empty(&g));
     }

@@ -1,6 +1,7 @@
 // edge type
 
 use crate::graph::traits::edge::Edge as EdgeTrait;
+use crate::graph::traits::edge::EdgeSet as EdgeSetTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 
 use crate::graph::traits::node::Node as NodeTrait;
@@ -8,6 +9,7 @@ use crate::graph::types::edgetype::EdgeType;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
+use std::marker::PhantomData;
 
 use std::hash::{Hash, Hasher};
 
@@ -30,9 +32,30 @@ pub struct Edge<T: NodeTrait> {
 
 /// short hand for edge set
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub struct Edges<'a, T: NodeTrait> {
+pub struct Edges<N: NodeTrait, E: EdgeTrait<N>> {
     /// edge set content
-    pub edge_set: HashSet<&'a Edge<T>>,
+    pub edge_set: HashSet<E>,
+    node_type: PhantomData<N>,
+}
+
+impl<N: NodeTrait, E: EdgeTrait<N> + Clone> EdgeSetTrait<N, E> for Edges<N, E> {
+    fn members(&self) -> HashSet<&E> {
+        let mut es: HashSet<&E> = HashSet::new();
+        for e in &self.edge_set {
+            es.insert(&e);
+        }
+        es
+    }
+    fn create(hset: HashSet<&E>) -> Self {
+        let mut es: HashSet<E> = HashSet::new();
+        for e in hset {
+            es.insert(e.clone());
+        }
+        Edges {
+            edge_set: es,
+            node_type: PhantomData,
+        }
+    }
 }
 
 impl<T: NodeTrait> fmt::Display for Edge<T> {

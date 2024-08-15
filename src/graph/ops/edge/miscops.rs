@@ -1,11 +1,11 @@
 //! Functions that has an [Edge] among arguments that output various values.
 
 use crate::graph::traits::edge::Edge as EdgeTrait;
-use crate::graph::traits::graph_obj::GraphObject;
+use crate::graph::traits::node::Node as NodeTrait;
 use std::collections::HashSet;
 
 /// extract node identifiers from a `e`
-pub fn node_ids<E: EdgeTrait>(e: &E) -> HashSet<String> {
+pub fn node_ids<N: NodeTrait, E: EdgeTrait<N>>(e: &E) -> HashSet<String> {
     let mut hset = HashSet::new();
     hset.insert(e.start().id().clone());
     hset.insert(e.end().id().clone());
@@ -20,7 +20,7 @@ mod tests {
     use crate::graph::types::node::Node;
     use std::collections::HashMap;
 
-    fn mk_uedge() -> Edge {
+    fn mk_uedge() -> Edge<Node> {
         let n1 = Node::new(String::from("m1"), HashMap::new());
         let n2 = Node::new(String::from("m2"), HashMap::new());
         let mut h1 = HashMap::new();

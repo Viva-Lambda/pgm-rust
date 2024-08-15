@@ -4,17 +4,16 @@ use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::graph::boolops::is_in;
 use crate::graph::ops::graph::miscops::by_id;
 use crate::graph::traits::edge::Edge as EdgeTrait;
-use crate::graph::traits::graph::Graph;
-use crate::graph::traits::graph_obj::GraphObject;
-use crate::graph::traits::node::Node;
-use crate::graph::types::edge::Edge;
+use crate::graph::traits::graph::Graph as GraphTrait;
+use crate::graph::traits::node::Node as NodeTrait;
 use std::collections::HashSet;
 
-fn mk_edgeset<'a, 'b, G, N, F>(g: &'a G, n: &'b N, mut f: F) -> HashSet<&'a Edge>
+fn mk_edgeset<'a, 'b, N, E, G, F>(g: &'a G, n: &'b N, mut f: F) -> HashSet<&'a E>
 where
-    G: Graph,
-    N: Node,
-    F: FnMut(&'a Edge, &'b N) -> bool,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
+    F: FnMut(&'a E, &'b N) -> bool,
 {
     if !is_in(g, n) {
         panic!("{g} does not contain {n}");
@@ -48,10 +47,10 @@ where
 /// use std::collections::HashMap;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n2", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let mut nset = HashSet::new();
@@ -65,7 +64,7 @@ where
 ///     let mut h2 = HashSet::new();
 ///     h2.insert(e1);
 ///     h2.insert(e2);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 /// let g = mk_g1();
 /// let n2 = Node::empty("n2");
@@ -73,12 +72,13 @@ where
 /// let es = g.edges();
 /// hset == es; // true
 /// ```
-pub fn edges_of<'a, 'b, G, N>(g: &'a G, n: &'b N) -> HashSet<&'a Edge>
+pub fn edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a E>
 where
-    G: Graph,
-    N: Node,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
-    let cond_fn = |e: &'a Edge, n: &'b N| -> bool { is_endvertice(e, n) };
+    let cond_fn = |e: &'a E, n: &'b N| -> bool { is_endvertice(e, n) };
     mk_edgeset(g, n, cond_fn)
 }
 
@@ -101,10 +101,10 @@ where
 /// use std::collections::HashMap;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n2", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let mut nset = HashSet::new();
@@ -118,7 +118,7 @@ where
 ///     let mut h2 = HashSet::new();
 ///     h2.insert(e1);
 ///     h2.insert(e2);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 /// let g = mk_g1();
 /// let n2 = Node::empty("n2");
@@ -128,12 +128,13 @@ where
 /// h2.insert(&e2);
 /// hset == h2; // true
 /// ```
-pub fn outgoing_edges_of<'a, 'b, G, N>(g: &'a G, n: &'b N) -> HashSet<&'a Edge>
+pub fn outgoing_edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a E>
 where
-    G: Graph,
-    N: Node,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
-    let cond_fn = |e: &'a Edge, n: &'b N| -> bool { e.start().id() == n.id() };
+    let cond_fn = |e: &'a E, n: &'b N| -> bool { e.start().id() == n.id() };
     mk_edgeset(g, n, cond_fn)
 }
 
@@ -156,10 +157,10 @@ where
 /// use std::collections::HashMap;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n2", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let mut nset = HashSet::new();
@@ -173,7 +174,7 @@ where
 ///     let mut h2 = HashSet::new();
 ///     h2.insert(e1);
 ///     h2.insert(e2);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 /// let g = mk_g1();
 /// let n2 = Node::empty("n2");
@@ -183,12 +184,13 @@ where
 /// h2.insert(&e1);
 /// hset == h2; // true
 /// ```
-pub fn incoming_edges_of<'a, 'b, G, N>(g: &'a G, n: &'b N) -> HashSet<&'a Edge>
+pub fn incoming_edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a E>
 where
-    G: Graph,
-    N: Node,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
-    let cond_fn = |e: &'a Edge, n: &'b N| -> bool { e.end().id() == n.id() };
+    let cond_fn = |e: &'a E, n: &'b N| -> bool { e.end().id() == n.id() };
     mk_edgeset(g, n, cond_fn)
 }
 /// collect edges using their end vertices
@@ -210,10 +212,10 @@ where
 /// use std::collections::HashMap;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n2", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let mut nset = HashSet::new();
@@ -227,7 +229,7 @@ where
 ///     let mut h2 = HashSet::new();
 ///     h2.insert(e1);
 ///     h2.insert(e2);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 /// let g = mk_g1();
 /// let n1 = Node::empty("n1");
@@ -238,10 +240,11 @@ where
 /// h2.insert(&e1);
 /// hset == h2; // true
 /// ```
-pub fn edges_by_vertices<'a, 'b, G, N>(g: &'a G, n1: &'b N, n2: &'b N) -> HashSet<&'a Edge>
+pub fn edges_by_vertices<'a, 'b, N, E, G>(g: &'a G, n1: &'b N, n2: &'b N) -> HashSet<&'a E>
 where
-    G: Graph,
-    N: Node,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
     if !is_in(g, n1) {
         panic!("{g} does not contain {n1}");
@@ -277,10 +280,10 @@ where
 /// use std::collections::HashMap;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n2", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let mut nset = HashSet::new();
@@ -294,7 +297,7 @@ where
 ///     let mut h2 = HashSet::new();
 ///     h2.insert(e1);
 ///     h2.insert(e2);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 /// let g = mk_g1();
 /// let eid = "e1";
@@ -302,12 +305,14 @@ where
 /// let e1 = mk_uedge("n1", "n2", "e1");
 /// edge == (&e1); // true
 /// ```
-pub fn edge_by_id<'a, 'b, G>(g: &'a G, id: &str) -> &'a Edge
+pub fn edge_by_id<'a, 'b, N, E, G>(g: &'a G, id: &str) -> &'a E
 where
-    G: Graph,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
 {
     //
-    let f = |mg: &'a G| -> HashSet<&'a Edge> { mg.edges() };
+    let f = |mg: &'a G| -> HashSet<&'a E> { mg.edges() };
     by_id(g, id, f)
 }
 
@@ -316,17 +321,16 @@ mod tests {
     use super::*;
     //
     use crate::graph::traits::edge::Edge as EdgeTrait;
-    use crate::graph::traits::graph::Graph as GraphTrait;
     use crate::graph::types::edge::Edge;
     use crate::graph::types::edgetype::EdgeType;
     use crate::graph::types::graph::Graph;
     use crate::graph::types::node::Node;
     use std::collections::HashMap;
 
-    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
         Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
     }
-    fn mk_g1() -> Graph {
+    fn mk_g1() -> Graph<Node, Edge<Node>> {
         let e1 = mk_uedge("n1", "n2", "e1");
         let e2 = mk_uedge("n2", "n3", "e2");
         let mut nset = HashSet::new();
@@ -340,7 +344,7 @@ mod tests {
         let mut h2 = HashSet::new();
         h2.insert(e1);
         h2.insert(e2);
-        Graph::new("g1".to_string(), nset, h2, h1)
+        Graph::new("g1".to_string(), h1, nset, h2)
     }
 
     #[test]

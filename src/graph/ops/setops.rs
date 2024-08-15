@@ -1,15 +1,11 @@
 //! Set operation functions defined on graphs
 
-use crate::graph::traits::edge::Edge;
+use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::node::Node as NodeTrait;
-use crate::graph::types::edge::Edge as EdgeT;
-use crate::graph::types::edge::Edges;
-use crate::graph::types::graph::Graph;
-use crate::graph::types::node::Node;
-use crate::graph::types::node::Vertices;
+use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ops::Add;
+use uuid::Uuid;
 
 /// # Intersection Operations
 
@@ -31,10 +27,11 @@ use std::ops::Add;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
 /// use pgm_rust::graph::types::node::Vertices;
+/// use pgm_rust::graph::traits::node::VertexSet;
 /// use pgm_rust::graph::ops::setops::intersection_edge;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 
@@ -43,13 +40,14 @@ use std::ops::Add;
 /// let einter = intersection_edge(&e1, &e2);
 /// let mut comph = HashSet::new();
 /// let n2 = Node::empty("n2");
-/// comph.insert(&n2);
+/// comph.insert(n2);
 /// let comp = Vertices {vertex_set: comph};
-/// einter == comp; // outputs true
+/// einter == comp.members(); // outputs true
 /// ```
-pub fn intersection_edge<'a, E>(a1: &'a E, a2: &'a E) -> Vertices<'a>
+pub fn intersection_edge<'a, N, E>(a1: &'a E, a2: &'a E) -> HashSet<&'a N>
 where
-    E: Edge,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
 {
     let mut hset1 = HashSet::new();
     let mut hset2 = HashSet::new();
@@ -59,10 +57,10 @@ where
     hset2.insert(a2.end());
     let mut inters = HashSet::new();
     for i in hset1.intersection(&hset2) {
-        let vref: &'a Node = i.clone();
+        let vref: &'a N = i.clone();
         inters.insert(vref);
     }
-    Vertices { vertex_set: inters }
+    inters
 }
 
 /// ## Intersection of Edge Sets
@@ -95,7 +93,7 @@ where
 ///     }
 ///     hs
 /// }
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
@@ -103,7 +101,7 @@ where
 ///     hs
 /// }
 ///
-/// fn mk_edge_refs<'a>(es: &'a Vec<Edge>) -> HashSet<&'a Edge> {
+/// fn mk_edge_refs<'a>(es: &'a Vec<Edge<Node>>) -> HashSet<&'a Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
@@ -117,16 +115,16 @@ where
 ///     }
 ///     hs
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let e3 = mk_uedge("n2", "n4", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 /// let g1 = mk_g1();
@@ -141,11 +139,15 @@ where
 /// comp.insert(&e1);
 /// einter == comp;
 /// ```
-pub fn intersection_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+pub fn intersection_edges<'a, N, E>(a1: HashSet<&'a E>, a2: HashSet<&'a E>) -> HashSet<&'a E>
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+{
     let mut inter = HashSet::new();
     for i in a1.intersection(&a2) {
         // instead of moving the reference we copy the reference
-        let tref: &'a T = i.clone();
+        let tref: &'a E = i.clone();
         inter.insert(tref);
     }
     inter
@@ -227,7 +229,7 @@ pub fn intersection_nodes<'a, T: NodeTrait>(
 /// use std::collections::HashSet;
 /// use std::collections::HashMap;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 
@@ -246,7 +248,7 @@ pub fn intersection_nodes<'a, T: NodeTrait>(
 ///     hs
 /// }
 ///
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
@@ -254,23 +256,23 @@ pub fn intersection_nodes<'a, T: NodeTrait>(
 ///     hs
 /// }
 ///
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let e3 = mk_uedge("n2", "n4", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
-/// fn mk_g2() -> Graph {
+/// fn mk_g2() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n20", "n30", "e2");
 ///     let e3 = mk_uedge("n20", "n40", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n20", "n30"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g2".to_string(), nset, h2, h1)
+///     Graph::new("g2".to_string(), h1, nset, h2)
 /// }
 ///
 /// let g1 = mk_g1();
@@ -287,7 +289,12 @@ pub fn intersection_nodes<'a, T: NodeTrait>(
 /// inter_e == comp_e;
 ///
 /// ```
-pub fn intersection<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
+pub fn intersection<'a, N, E, G>(a1: &'a G, a2: &'a G) -> G
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
+{
     //
     let vs1 = a1.vertices();
     let vs2 = a2.vertices();
@@ -296,7 +303,8 @@ pub fn intersection<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     let es2 = a2.edges();
     let vs = intersection_nodes(vs1, vs2);
     let es = intersection_edges(es1, es2);
-    Graph::from_edge_node_refs_set(es, vs)
+    let gid = Uuid::new_v4().to_string();
+    G::create_from_ref(gid, HashMap::new(), vs, es)
 }
 
 /// # Union Operations
@@ -385,7 +393,7 @@ pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> 
 ///     }
 ///     hs
 /// }
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 ///
@@ -396,7 +404,11 @@ pub fn union_nodes<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> 
 /// let comp = mk_node_refs(&comp_v);
 /// eunion == comp;
 /// ```
-pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
+pub fn union_edge<'a, N, E>(a1: &'a E, a2: &'a E) -> HashSet<&'a N>
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+{
     let mut a1nodes = HashSet::new();
     a1nodes.insert(a1.start());
     a1nodes.insert(a1.end());
@@ -430,7 +442,7 @@ pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
 /// use std::collections::HashSet;
 /// use std::collections::HashMap;
 
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 /// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
@@ -440,28 +452,28 @@ pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
 ///     }
 ///     hs
 /// }
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
 ///     }
 ///     hs
 /// }
-/// fn mk_edge_refs<'a>(es: &'a Vec<Edge>) -> HashSet<&'a Edge> {
+/// fn mk_edge_refs<'a>(es: &'a Vec<Edge<Node>>) -> HashSet<&'a Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
 ///     }
 ///     hs
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let e3 = mk_uedge("n2", "n4", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 /// let g1 = mk_g1();
 /// let g1es = g1.edges();
@@ -479,7 +491,11 @@ pub fn union_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
 /// comp.insert(&e3);
 /// eunion == comp;
 /// ```
-pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+pub fn union_edges<'a, N, E>(a1: HashSet<&'a E>, a2: HashSet<&'a E>) -> HashSet<&'a E>
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+{
     let mut inter = HashSet::new();
     for i in a1.union(&a2) {
         // instead of moving the reference we copy the reference
@@ -509,7 +525,7 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
 /// use std::collections::HashSet;
 /// use std::collections::HashMap;
 
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 /// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
@@ -519,30 +535,30 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
 ///     }
 ///     hs
 /// }
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
 ///     }
 ///     hs
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let e3 = mk_uedge("n2", "n4", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
-/// fn mk_g2() -> Graph {
+/// fn mk_g2() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n20", "n30", "e2");
 ///     let e3 = mk_uedge("n20", "n40", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n20", "n30"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g2".to_string(), nset, h2, h1)
+///     Graph::new("g2".to_string(), h1, nset, h2)
 /// }
 /// let g1 = mk_g1();
 /// let g2 = mk_g2();
@@ -566,7 +582,12 @@ pub fn union_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashS
 /// union_v == comp_v;
 /// union_e == comp_e;
 /// ```
-pub fn union_graph<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
+pub fn union_graph<'a, N, E, G>(a1: &'a G, a2: &'a G) -> G
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
+{
     //
     let vs1 = a1.vertices();
     let vs2 = a2.vertices();
@@ -575,41 +596,8 @@ pub fn union_graph<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     let es2 = a2.edges();
     let vs = union_nodes(vs1, vs2);
     let es = union_edges(es1, es2);
-    Graph::from_edge_node_refs_set(es, vs)
-}
-// overload add for union
-impl<'a> Add for Vertices<'a> {
-    type Output = Self;
-    fn add(self, other: Self) -> Self {
-        Vertices {
-            vertex_set: union_nodes(self.vertex_set, other.vertex_set),
-        }
-    }
-}
-impl<'a> Add for Edges<'a> {
-    type Output = Self;
-    fn add(self, other: Self) -> Self {
-        Edges {
-            edge_set: union_edges(self.edge_set, other.edge_set),
-        }
-    }
-}
-impl Add for EdgeT {
-    type Output = HashSet<Node>;
-    fn add(self, other: Self) -> HashSet<Node> {
-        let nset = union_edge(&self, &other);
-        let mut hset = HashSet::new();
-        for n in nset {
-            hset.insert(n.clone());
-        }
-        hset
-    }
-}
-impl Add for Graph {
-    type Output = Self;
-    fn add(self, other: Self) -> Self {
-        union_graph(&self, &other)
-    }
+    let gid = Uuid::new_v4().to_string();
+    G::create_from_ref(gid, HashMap::new(), vs, es)
 }
 
 /// # Difference Operations
@@ -636,7 +624,7 @@ impl Add for Graph {
 /// use std::collections::HashSet;
 /// use std::collections::HashMap;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 /// fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
@@ -646,21 +634,21 @@ impl Add for Graph {
 ///     }
 ///     hs
 /// }
-/// fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+/// fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
 ///     }
 ///     hs
 /// }
-/// fn mk_g1() -> Graph {
+/// fn mk_g1() -> Graph<Node, Edge<Node>> {
 ///     let e1 = mk_uedge("n1", "n3", "e1");
 ///     let e2 = mk_uedge("n2", "n3", "e2");
 ///     let e3 = mk_uedge("n2", "n4", "e3");
 ///     let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
 ///     let h1 = HashMap::new();
 ///     let h2 = mk_edges(vec![e1, e2, e3]);
-///     Graph::new("g1".to_string(), nset, h2, h1)
+///     Graph::new("g1".to_string(), h1, nset, h2)
 /// }
 /// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
 ///     let mut hs = HashSet::new();
@@ -715,7 +703,7 @@ pub fn difference_nodes<'a, T: NodeTrait>(
 /// use pgm_rust::graph::ops::setops::difference_edge;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
 /// fn mk_node_refs<'a>(es: &'a Vec<Node>) -> HashSet<&'a Node> {
@@ -732,7 +720,7 @@ pub fn difference_nodes<'a, T: NodeTrait>(
 /// let comp = mk_node_refs(&comp_v);
 /// ediff == comp;
 /// ```
-pub fn difference_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
+pub fn difference_edge<'a, N: NodeTrait, E: EdgeTrait<N>>(a1: &'a E, a2: &'a E) -> HashSet<&'a N> {
     let mut a1nodes = HashSet::new();
     a1nodes.insert(a1.start());
     a1nodes.insert(a1.end());
@@ -761,10 +749,10 @@ pub fn difference_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
 /// use pgm_rust::graph::ops::setops::difference_edges;
 /// use std::collections::HashSet;
 ///
-/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+/// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
 ///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
 /// }
-/// fn mk_edge_refs<'a>(es: &'a Vec<Edge>) -> HashSet<&'a Edge> {
+/// fn mk_edge_refs<'a>(es: &'a Vec<Edge<Node>>) -> HashSet<&'a Edge<Node>> {
 ///     let mut hs = HashSet::new();
 ///     for e in es {
 ///         hs.insert(e);
@@ -787,7 +775,10 @@ pub fn difference_edge<'a, T: Edge>(a1: &'a T, a2: &'a T) -> HashSet<&'a Node> {
 /// comp.insert(&e1);
 /// es_diff == comp;
 /// ```
-pub fn difference_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> HashSet<&'a T> {
+pub fn difference_edges<'a, N: NodeTrait, E: EdgeTrait<N>>(
+    a1: HashSet<&'a E>,
+    a2: HashSet<&'a E>,
+) -> HashSet<&'a E> {
     let mut inter = HashSet::new();
     for i in a1.difference(&a2) {
         // instead of moving the reference we copy the reference
@@ -796,7 +787,10 @@ pub fn difference_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> 
     inter
 }
 /// difference of graph
-pub fn difference<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
+pub fn difference<'a, N: NodeTrait, E: EdgeTrait<N>, G: GraphTrait<N, E>>(
+    a1: &'a G,
+    a2: &'a G,
+) -> G {
     //
     let vs1 = a1.vertices();
     let vs2 = a2.vertices();
@@ -805,14 +799,15 @@ pub fn difference<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     let es2 = a2.edges();
     let vs = difference_nodes(vs1, vs2);
     let es = difference_edges(es1, es2);
-    Graph::from_edge_node_refs_set(es, vs)
+    let gid = Uuid::new_v4().to_string();
+    G::create_from_ref(gid, HashMap::new(), vs, es)
 }
 
 /// symmetric difference
-pub fn symmetric_difference_edges<'a, T: Edge>(
-    a1: HashSet<&'a T>,
-    a2: HashSet<&'a T>,
-) -> HashSet<&'a T> {
+pub fn symmetric_difference_edges<'a, N: NodeTrait, E: EdgeTrait<N>>(
+    a1: HashSet<&'a E>,
+    a2: HashSet<&'a E>,
+) -> HashSet<&'a E> {
     let mut inter = HashSet::new();
     for i in a1.symmetric_difference(&a2) {
         // instead of moving the reference we copy the reference
@@ -833,7 +828,10 @@ pub fn symmetric_difference_node<'a, T: NodeTrait>(
     inter
 }
 /// difference of graph
-pub fn symmetric_difference<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
+pub fn symmetric_difference<'a, N: NodeTrait, E: EdgeTrait<N>, G: GraphTrait<N, E>>(
+    a1: &'a G,
+    a2: &'a G,
+) -> G {
     //
     let vs1 = a1.vertices();
     let vs2 = a2.vertices();
@@ -842,13 +840,17 @@ pub fn symmetric_difference<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> Graph {
     let es2 = a2.edges();
     let vs = symmetric_difference_node(vs1, vs2);
     let es = symmetric_difference_edges(es1, es2);
-    Graph::from_edge_node_refs_set(es, vs)
+    let gid = Uuid::new_v4().to_string();
+    G::create_from_ref(gid, HashMap::new(), vs, es)
 }
 
 /// contains
 
 /// contains of edges
-pub fn contains_edges<'a, T: Edge>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -> bool {
+pub fn contains_edges<'a, N: NodeTrait, E: EdgeTrait<N>>(
+    a1: HashSet<&'a E>,
+    a2: HashSet<&'a E>,
+) -> bool {
     a2.is_subset(&a1)
 }
 /// contains of nodes
@@ -856,7 +858,12 @@ pub fn contains_node<'a, T: NodeTrait>(a1: HashSet<&'a T>, a2: HashSet<&'a T>) -
     a2.is_subset(&a1)
 }
 /// contains of graph
-pub fn contains<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> bool {
+pub fn contains<'a, N, E, G>(a1: &'a G, a2: &'a G) -> bool
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
+{
     //
     let vs1 = a1.vertices();
     let vs2 = a2.vertices();
@@ -872,10 +879,12 @@ pub fn contains<'a, T: GraphTrait>(a1: &'a T, a2: &'a T) -> bool {
 mod tests {
     use super::*;
     use crate::graph::traits::graph::Graph as GraphTrait;
+    use crate::graph::traits::node::VertexSet;
     use crate::graph::types::edge::Edge;
     use crate::graph::types::edgetype::EdgeType;
     use crate::graph::types::graph::Graph;
     use crate::graph::types::node::Node;
+    use crate::graph::types::node::Vertices;
     use std::collections::HashMap;
     use std::collections::HashSet;
 
@@ -889,10 +898,10 @@ mod tests {
         }
         hs
     }
-    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge {
+    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
         Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
     }
-    fn mk_edges(es: Vec<Edge>) -> HashSet<Edge> {
+    fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
         let mut hs = HashSet::new();
         for e in es {
             hs.insert(e);
@@ -900,7 +909,7 @@ mod tests {
         hs
     }
 
-    fn mk_edge_refs<'a>(es: &'a Vec<Edge>) -> HashSet<&'a Edge> {
+    fn mk_edge_refs<'a>(es: &'a Vec<Edge<Node>>) -> HashSet<&'a Edge<Node>> {
         let mut hs = HashSet::new();
         for e in es {
             hs.insert(e);
@@ -914,24 +923,24 @@ mod tests {
         }
         hs
     }
-    fn mk_g1() -> Graph {
+    fn mk_g1() -> Graph<Node, Edge<Node>> {
         let e1 = mk_uedge("n1", "n3", "e1");
         let e2 = mk_uedge("n2", "n3", "e2");
         let e3 = mk_uedge("n2", "n4", "e3");
         let nset = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5"]);
         let h1 = HashMap::new();
         let h2 = mk_edges(vec![e1, e2, e3]);
-        Graph::new("g1".to_string(), nset, h2, h1)
+        Graph::new("g1".to_string(), h1, nset, h2)
     }
 
-    fn mk_g2() -> Graph {
+    fn mk_g2() -> Graph<Node, Edge<Node>> {
         let e1 = mk_uedge("n1", "n3", "e1");
         let e2 = mk_uedge("n20", "n30", "e2");
         let e3 = mk_uedge("n20", "n40", "e3");
         let nset = mk_nodes(vec!["n1", "n2", "n3", "n20", "n30"]);
         let h1 = HashMap::new();
         let h2 = mk_edges(vec![e1, e2, e3]);
-        Graph::new("g2".to_string(), nset, h2, h1)
+        Graph::new("g2".to_string(), h1, nset, h2)
     }
 
     #[test]
@@ -941,9 +950,9 @@ mod tests {
         let einter = intersection_edge(&e1, &e2);
         let mut comph = HashSet::new();
         let n2 = mk_node("n2");
-        comph.insert(&n2);
+        comph.insert(n2);
         let comp = Vertices { vertex_set: comph };
-        assert_eq!(einter, comp);
+        assert_eq!(einter, comp.members());
     }
     #[test]
     fn test_intersection_edges() {
@@ -1039,88 +1048,6 @@ mod tests {
         let g1 = mk_g1();
         let g2 = mk_g2();
         let g1uniong2 = union_graph(&g1, &g2);
-        let union_v = g1uniong2.vertices();
-        let union_e = g1uniong2.edges();
-        let mut comp_v = HashSet::new();
-        for v in g1.vertices() {
-            comp_v.insert(v);
-        }
-        for v in g2.vertices() {
-            comp_v.insert(v);
-        }
-        let mut comp_e = HashSet::new();
-        for e in g1.edges() {
-            comp_e.insert(e);
-        }
-        for e in g2.edges() {
-            comp_e.insert(e);
-        }
-        assert_eq!(union_v, comp_v);
-        assert_eq!(union_e, comp_e);
-    }
-
-    // add test start
-    #[test]
-    fn test_add_edge() {
-        let e2 = mk_uedge("n20", "n30", "e2");
-        let e3 = mk_uedge("n20", "n40", "e3");
-        let eunion = e2 + e3;
-        let comp_v = vec!["n20", "n30", "n40"];
-        let comp = mk_nodes(comp_v);
-        assert_eq!(eunion, comp);
-    }
-    #[test]
-    fn test_add_edges() {
-        let g1 = mk_g1();
-        let g1es = g1.edges();
-        let e1 = mk_uedge("n1", "n3", "e1");
-        let e2 = mk_uedge("n20", "n30", "e2");
-        let e3 = mk_uedge("n20", "n40", "e3");
-        let evs = vec![e1.clone(), e2.clone(), e3.clone()];
-        let es = mk_edge_refs(&evs);
-        let es_g1 = Edges {
-            edge_set: g1es.clone(),
-        };
-        let es_2 = Edges { edge_set: es };
-        let eunion = es_g1 + es_2;
-        let mut comph = HashSet::new();
-        for e in g1es {
-            comph.insert(e);
-        }
-        comph.insert(&e2);
-        comph.insert(&e3);
-        let comp = Edges { edge_set: comph };
-        assert_eq!(eunion, comp);
-    }
-    #[test]
-    fn test_add_nodes() {
-        let g1 = mk_g1();
-        let g1ns = g1.vertices();
-        let n1 = mk_node("n1");
-        let n2 = mk_node("n20");
-        let n3 = mk_node("n30");
-        let nvs = vec![n1.clone(), n2.clone(), n3.clone()];
-        let ns_1 = Vertices {
-            vertex_set: mk_node_refs(&nvs),
-        };
-        let ns_g1 = Vertices {
-            vertex_set: g1ns.clone(),
-        };
-        let nunion = ns_1 + ns_g1;
-        let mut comph = HashSet::new();
-        for n in g1ns {
-            comph.insert(n);
-        }
-        comph.insert(&n2);
-        comph.insert(&n3);
-        let comp = Vertices { vertex_set: comph };
-        assert_eq!(nunion, comp);
-    }
-    #[test]
-    fn test_add_graph() {
-        let g1 = mk_g1();
-        let g2 = mk_g2();
-        let g1uniong2 = g1.clone() + g2.clone();
         let union_v = g1uniong2.vertices();
         let union_e = g1uniong2.edges();
         let mut comp_v = HashSet::new();

@@ -1,15 +1,13 @@
 //! Functions that has an [Edge] among arguments that output a [Node]
 use crate::graph::traits::edge::Edge as EdgeTrait;
-use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
-use crate::graph::types::edge::Edge;
-use crate::graph::types::node::Node;
 
 /// get the opposite node from edge
 /// # Description
-pub fn get_other<'a, 'b, N>(e: &'a Edge, n: &'b N) -> &'a Node
+pub fn get_other<'a, 'b, N, E>(e: &'a E, n: &'b N) -> &'a N
 where
     N: NodeTrait,
+    E: EdgeTrait<N>,
 {
     let nid: &String = n.id();
     let start = e.start();
@@ -29,9 +27,11 @@ where
 mod tests {
 
     use super::*;
+    use crate::graph::types::edge::Edge;
+    use crate::graph::types::node::Node;
     use std::collections::HashMap; // brings in the parent scope to current module scope
 
-    fn mk_uedge() -> Edge {
+    fn mk_uedge() -> Edge<Node> {
         let n1 = Node::new(String::from("m1"), HashMap::new());
         let n2 = Node::new(String::from("m2"), HashMap::new());
         let mut h1 = HashMap::new();
