@@ -4,10 +4,13 @@
 pub mod boolops;
 
 /// other operations
-pub mod miscops;
+pub mod misc;
 
 /// node operations
-pub mod nodeops;
+pub mod node;
 
 /// edge operations
-pub mod edgeops;
+pub mod edge;
+
+/// search related operations
+pub mod search;

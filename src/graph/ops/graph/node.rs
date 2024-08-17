@@ -1,7 +1,7 @@
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::edge::nodeops::get_other;
 use crate::graph::ops::graph::boolops::is_in;
-use crate::graph::ops::graph::miscops::by_id;
+use crate::graph::ops::graph::misc::by_id;
 use crate::graph::traits::edge::Edge as EdgeTrait;
 ///
 use crate::graph::traits::graph::Graph as GraphTrait;
@@ -23,7 +23,7 @@ use std::collections::HashSet;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
-/// use pgm_rust::graph::ops::graph::nodeops::neighbors_of;
+/// use pgm_rust::graph::ops::graph::node::neighbors_of;
 /// use std::collections::HashMap;
 /// use std::collections::HashSet;
 ///
@@ -108,7 +108,7 @@ where
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
-/// use pgm_rust::graph::ops::graph::nodeops::vertex_by_id;
+/// use pgm_rust::graph::ops::graph::node::vertex_by_id;
 /// use std::collections::HashMap;
 /// use std::collections::HashSet;
 ///

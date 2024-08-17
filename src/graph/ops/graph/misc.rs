@@ -46,7 +46,7 @@ where
 /// use pgm_rust::graph::types::edge::Edge;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
-/// use pgm_rust::graph::ops::graph::miscops::to_adjmat;
+/// use pgm_rust::graph::ops::graph::misc::to_adjmat;
 /// use pgm_rust::graph::traits::graph_obj::GraphObject;
 /// use pgm_rust::graph::types::node::Node;
 /// use std::collections::HashMap;

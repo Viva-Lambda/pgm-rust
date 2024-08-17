@@ -2,7 +2,7 @@
 //
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::graph::boolops::is_in;
-use crate::graph::ops::graph::miscops::by_id;
+use crate::graph::ops::graph::misc::by_id;
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::node::Node as NodeTrait;
@@ -40,7 +40,7 @@ where
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
 /// use pgm_rust::graph::types::edge::Edge;
-/// use pgm_rust::graph::ops::graph::edgeops::edges_of;
+/// use pgm_rust::graph::ops::graph::edge::edges_of;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
@@ -94,7 +94,7 @@ where
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
 /// use pgm_rust::graph::types::edge::Edge;
-/// use pgm_rust::graph::ops::graph::edgeops::outgoing_edges_of;
+/// use pgm_rust::graph::ops::graph::edge::outgoing_edges_of;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
@@ -150,7 +150,7 @@ where
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
 /// use pgm_rust::graph::types::edge::Edge;
-/// use pgm_rust::graph::ops::graph::edgeops::incoming_edges_of;
+/// use pgm_rust::graph::ops::graph::edge::incoming_edges_of;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
@@ -205,7 +205,7 @@ where
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
 /// use pgm_rust::graph::types::edge::Edge;
-/// use pgm_rust::graph::ops::graph::edgeops::edges_by_vertices;
+/// use pgm_rust::graph::ops::graph::edge::edges_by_vertices;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
@@ -273,7 +273,7 @@ where
 /// use pgm_rust::graph::traits::edge::Edge as EdgeTrait;
 /// use pgm_rust::graph::traits::graph::Graph as GraphTrait;
 /// use pgm_rust::graph::types::edge::Edge;
-/// use pgm_rust::graph::ops::graph::edgeops::edge_by_id;
+/// use pgm_rust::graph::ops::graph::edge::edge_by_id;
 /// use pgm_rust::graph::types::edgetype::EdgeType;
 /// use pgm_rust::graph::types::graph::Graph;
 /// use pgm_rust::graph::types::node::Node;
