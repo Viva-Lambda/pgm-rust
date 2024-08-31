@@ -14,3 +14,6 @@ pub mod graph;
 
 /// path object implements [Path] trait.
 pub mod path;
+
+/// search result object
+pub mod search;

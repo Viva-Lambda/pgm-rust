@@ -32,5 +32,24 @@ pub trait Graph<NodeType: Node, EdgeType: Edge<NodeType>>: GraphObject {
         _: HashSet<&NodeType>,
         _: HashSet<&EdgeType>,
     ) -> Self;
+
+    /// create vertex id: vertex map
+    fn vmap(&self) -> HashMap<String, &NodeType> {
+        let vs = self.vertices();
+        self._idmap::<NodeType>(vs)
+    }
+    fn _idmap<'a, T: GraphObject>(&'a self, ts: HashSet<&'a T>) -> HashMap<String, &T> {
+        let mut hs: HashMap<String, &'a T> = HashMap::new();
+        for v in ts {
+            let id: String = v.id().to_string();
+            hs.insert(id, v);
+        }
+        hs
+    }
+    /// create vertex id: vertex map
+    fn emap(&self) -> HashMap<String, &EdgeType> {
+        let vs = self.edges();
+        self._idmap::<EdgeType>(vs)
+    }
 }
 //

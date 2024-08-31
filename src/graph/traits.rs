@@ -23,3 +23,6 @@ pub mod tree;
 
 /// behaviors that defines a [Path]
 pub mod path;
+
+/// behaviors that define a search result
+pub mod search;

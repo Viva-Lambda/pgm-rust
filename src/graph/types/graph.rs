@@ -46,7 +46,7 @@ impl<T: NodeTrait, E: EdgeTrait<T>> Hash for Graph<T, E> {
 impl<T: NodeTrait, E: EdgeTrait<T>> fmt::Display for Graph<T, E> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let nid = &self.graph_id;
-        write!(f, "Graph[ id: {} ]", nid)
+        write!(f, "<Graph id='{}'/>", nid)
     }
 }
 

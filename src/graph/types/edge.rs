@@ -66,7 +66,7 @@ impl<T: NodeTrait> fmt::Display for Edge<T> {
         let et = &self.info.edge_type;
         write!(
             f,
-            "Edge[ id: {}, start: {}, end: {}, type: {} ]",
+            "<Edge id='{}' start='{}' end='{}' type='{}'/>",
             eid, n1, n2, et
         )
     }

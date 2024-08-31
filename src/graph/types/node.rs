@@ -82,7 +82,7 @@ impl Node {
 impl fmt::Display for Node {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let nid = &self.node_id;
-        write!(f, "Node[ id: {} ]", nid)
+        write!(f, "<Node id='{}'/>", nid)
     }
 }
 
