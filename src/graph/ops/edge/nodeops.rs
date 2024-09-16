@@ -1,10 +1,11 @@
 //! Functions that has an [Edge] among arguments that output a [Node]
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::node::Node as NodeTrait;
+use std::option::Option;
 
 /// get the opposite node from edge
 /// # Description
-pub fn get_other<'a, 'b, N, E>(e: &'a E, n: &'b N) -> &'a N
+pub fn get_other<'a, 'b, N, E>(e: &'a E, n: &'b N) -> Option<&'a N>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -15,11 +16,12 @@ where
     let end = e.end();
     let eid = end.id();
     if sid == nid {
-        e.end()
+        Some(e.end())
     } else if eid == nid {
-        e.start()
+        Some(e.start())
     } else {
-        panic!("{n} does not belong to this {e}");
+        None
+        //panic!("{n} does not belong to this {e}");
     }
 }
 
@@ -39,10 +41,16 @@ mod tests {
         Edge::undirected(String::from("uedge"), n1, n2, h1)
     }
     #[test]
-    fn test_get_other() {
+    fn test_get_other_some() {
         let e = mk_uedge();
         let n2 = Node::new(String::from("m2"), HashMap::new());
-        let n1 = Node::new(String::from("m1"), HashMap::new());
+        let n1 = Some(Node::new(String::from("m1"), HashMap::new()));
         assert_eq!(get_other(&e, &n2), &n1);
+    }
+
+    fn test_get_other_none() {
+        let e = mk_uedge();
+        let n2 = Node::new(String::from("m3"), HashMap::new());
+        assert_eq!(get_other(&e, &n2), None);
     }
 }
