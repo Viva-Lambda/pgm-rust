@@ -13,32 +13,38 @@ use std::option::Option;
 use uuid::Uuid;
 
 #[derive(Debug, Eq, PartialEq)]
-pub struct DfsForestMaps<'a, C: CycleInfoTrait, N: NodeTrait> {
-    pub vertices: &'a mut HashMap<String, &'a N>,
-    pub first_visit: &'a mut HashMap<String, usize>,
-    pub last_visit: &'a mut HashMap<String, usize>,
-    pub pred: &'a mut HashMap<String, Option<String>>,
-    pub marked: &'a mut HashMap<String, bool>,
-    pub identifiers: &'a mut HashSet<String>,
-    pub cycles: &'a mut HashMap<String, Vec<C>>,
+pub struct DfsForestMaps<
+    'graph_lifetime,
+    'dfs_lifetime,
+    C: CycleInfoTrait<'graph_lifetime>,
+    N: NodeTrait,
+> {
+    pub vertices: &'dfs_lifetime mut HashMap<String, &'graph_lifetime N>,
+    pub first_visit: &'dfs_lifetime mut HashMap<&'graph_lifetime String, usize>,
+    pub last_visit: &'dfs_lifetime mut HashMap<&'graph_lifetime String, usize>,
+    pub pred: &'dfs_lifetime mut HashMap<&'graph_lifetime String, Option<&'graph_lifetime String>>,
+    pub marked: &'dfs_lifetime mut HashMap<&'graph_lifetime String, bool>,
+    pub identifiers: &'dfs_lifetime mut HashSet<&'graph_lifetime String>,
+    pub cycles: &'dfs_lifetime mut HashMap<&'graph_lifetime String, Vec<C>>,
 }
 
 /// holds information about cycles in the graph
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct CycleInfo {
-    _ancestor: String,
-    _before: String,
+pub struct CycleInfo<'graph_lifetime> {
+    _ancestor: &'graph_lifetime String,
+    _before: &'graph_lifetime String,
     _ancestor_first_time_visit: usize,
     _ancestor_last_time_visit: Option<usize>,
     _current_final_time_visit: usize,
 }
 
-impl CycleInfoTrait for CycleInfo {
-    fn ancestor(&self) -> String {
-        self._ancestor.clone()
+impl<'graph_lifetime> CycleInfoTrait<'graph_lifetime> for CycleInfo<'graph_lifetime> {
+    fn ancestor(&self) -> &'graph_lifetime String {
+        let ancestor: &'graph_lifetime String = self._ancestor;
+        ancestor
     }
-    fn before(&self) -> String {
-        self._before.clone()
+    fn before(&self) -> &'graph_lifetime String {
+        self._before
     }
     fn ancestor_first_time_visit(&self) -> usize {
         self._ancestor_first_time_visit
@@ -50,8 +56,9 @@ impl CycleInfoTrait for CycleInfo {
         self._current_final_time_visit
     }
     fn create(
-        ancestor: String,
-        before: String,
+        &self,
+        ancestor: &'graph_lifetime String,
+        before: &'graph_lifetime String,
         ancestor_first_time: usize,
         ancestor_last_time: Option<usize>,
         current_final_time: usize,

@@ -45,7 +45,7 @@ mod tests {
         let e = mk_uedge();
         let n2 = Node::new(String::from("m2"), HashMap::new());
         let n1 = Some(Node::new(String::from("m1"), HashMap::new()));
-        assert_eq!(get_other(&e, &n2), &n1);
+        assert_eq!(get_other(&e, &n2), n1.as_ref());
     }
 
     fn test_get_other_none() {

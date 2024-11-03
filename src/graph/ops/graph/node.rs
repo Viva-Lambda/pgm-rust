@@ -87,7 +87,12 @@ where
     for e in g.edges() {
         if is_endvertice(e, n) {
             let n2 = get_other(e, n);
-            neighbors.insert(n2);
+            match n2 {
+                None => continue,
+                Some(nn2) => {
+                    neighbors.insert(nn2);
+                }
+            } 
         }
     }
     // check is in

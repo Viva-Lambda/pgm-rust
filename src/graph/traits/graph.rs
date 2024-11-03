@@ -38,8 +38,11 @@ pub trait Graph<NodeType: Node, EdgeType: Edge<NodeType>>: GraphObject {
         let vs = self.vertices();
         self._idmap::<NodeType>(vs)
     }
-    fn _idmap<'a, T: GraphObject>(&'a self, ts: HashSet<&'a T>) -> HashMap<String, &T> {
-        let mut hs: HashMap<String, &'a T> = HashMap::new();
+    fn _idmap<'graph_lifetime, T: GraphObject>(
+        &'graph_lifetime self,
+        ts: HashSet<&'graph_lifetime T>,
+    ) -> HashMap<String, &T> {
+        let mut hs: HashMap<String, &'graph_lifetime T> = HashMap::new();
         for v in ts {
             let id: String = v.id().to_string();
             hs.insert(id, v);

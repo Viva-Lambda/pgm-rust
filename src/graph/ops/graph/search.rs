@@ -27,6 +27,35 @@ fn get_vertex_lst<'a, N: NodeTrait>(
     (vecs, ns)
 }
 
+fn _init_dfs_result<'a, N, E, C, DFSResult>(vertices: HashMap<String, &'a N>) -> DFSResult
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    C: CycleInfoTrait,
+    DFSResult: DepthFirstResultTrait<'a, N, E, C>,
+{
+    let mut marked: HashMap<String, bool> = vertices.keys().map(|x| (x.clone(), false)).collect();
+    let mut preds: HashMap<String, HashMap<String, Option<String>>> = HashMap::new();
+    let mut ids: HashMap<String, HashSet<String>> = HashMap::new();
+    let mut cycles: HashMap<String, Vec<C>> = HashMap::new();
+    let mut d: HashMap<String, usize> = vertices.keys().map(|x| (x.clone(), usize::MAX)).collect();
+    let mut f: HashMap<String, usize> = vertices.keys().map(|x| (x.clone(), usize::MAX)).collect();
+
+    let mut identifiers: HashSet<String> = HashSet::new();
+    let mut pred: HashMap<String, Option<String>> =
+        vertices.keys().map(|x| (x.clone(), None)).collect();
+    let mut dfs_record = DfsForestMaps {
+        vertices: &mut vertices,
+        first_visit: &mut d,
+        last_visit: &mut f,
+        pred: &mut pred,
+        marked: &mut marked,
+        identifiers: &mut identifiers,
+        cycles: &mut cycles,
+    };
+    dfs_record
+}
+
 fn depth_first_search<'a, N, E, G, F, C, DFSResult>(
     g: &G,
     edge_generator: &F,
@@ -54,7 +83,7 @@ where
     for u in vlist {
         match marked.get(&u) {
             None => {
-                panic!("key not exist in marked")
+                panic!("key not exist in marked");
             }
             Some(val_ref) => {
                 if !val_ref {
@@ -101,10 +130,10 @@ where
 /// - time global visit counter
 /// - check_cycle fill cycles if it is detected
 /// - edge_generator generate edges of a vertex with respect to graph type
-fn dfs_forest2<N, E, G, F, C>(
-    g: &G,
+fn dfs_forest2<'a, N, E, G, F, C>(
+    g: &'a G,
     dfs_record: &mut DfsForestMaps<C, N>,
-    u: String,
+    u: &'a String,
     time: &mut usize,
     edge_generator: &F,
     check_cycle: bool,
@@ -119,7 +148,7 @@ where
     dfs_record.marked.insert(u.to_string(), true);
     *time += 1;
     dfs_record.first_visit.insert(u.to_string(), *time);
-    let uopt = dfs_record.vertices.get(&u);
+    let uopt = dfs_record.vertices.get(u);
     match uopt {
         None => (),
         Some(unode) => {
@@ -130,7 +159,7 @@ where
                     Some(v) => {
                         if is_not_marked(v.clone(), dfs_record) {
                             insert_to_pred(v.clone(), &u, dfs_record);
-                            dfs_forest2(g, dfs_record, v, time, edge_generator, check_cycle);
+                            dfs_forest2(g, dfs_record, &v, time, edge_generator, check_cycle);
                         }
                     }
                 }
@@ -144,7 +173,7 @@ where
         // v ancestor, u visiting node
         // edge between them is a back edge
         // see p. 151, and p. 159-160
-        match dfs_record.vertices.get(&u) {
+        match dfs_record.vertices.get(u) {
             None => (),
             Some(unode) => {
                 for edge in edge_generator(unode) {
@@ -192,12 +221,12 @@ fn mk_cycle_info<C: CycleInfoTrait, N: NodeTrait>(
     }
 }
 
-fn add_to_cycle<C: CycleInfoTrait, N: NodeTrait>(
-    u: String,
+fn add_to_cycle<'a, C: CycleInfoTrait, N: NodeTrait>(
+    u: &'a String,
     cycle_info_opt: Option<C>,
     dfs_record: &mut DfsForestMaps<C, N>,
 ) -> () {
-    let uvec_op = dfs_record.cycles.get(&u);
+    let uvec_op = dfs_record.cycles.get(u);
     match cycle_info_opt {
         None => (),
         Some(cycle_info) => match uvec_op {
