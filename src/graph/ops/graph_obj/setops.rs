@@ -84,9 +84,8 @@ pub fn set_op_graph_obj_set<T: GraphObject + Clone>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use super::*; // brings in the parent scope to current module scope
     use crate::graph::types::node::Node;
-    use std::collections::HashSet;
 
     #[test]
     fn test_set_op_graph_obj_ref_set_union() {
