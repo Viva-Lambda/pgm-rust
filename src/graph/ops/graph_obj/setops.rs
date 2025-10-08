@@ -81,3 +81,87 @@ pub fn set_op_graph_obj_set<T: GraphObject + Clone>(
     }
     hset
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::graph::types::node::Node;
+    use std::collections::HashSet;
+
+    #[test]
+    fn test_set_op_graph_obj_ref_set_union() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
+        let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
+        
+        let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::Union);
+        assert_eq!(result.len(), 3);
+        assert!(result.contains(&&n1));
+        assert!(result.contains(&&n2));
+        assert!(result.contains(&&n3));
+    }
+
+    #[test]
+    fn test_set_op_graph_obj_ref_set_intersection() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
+        let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
+        
+        let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::Intersection);
+        assert_eq!(result.len(), 1);
+        assert!(result.contains(&&n2));
+    }
+
+    #[test]
+    fn test_set_op_graph_obj_ref_set_difference() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
+        let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
+        
+        let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::Difference);
+        assert_eq!(result.len(), 1);
+        assert!(result.contains(&&n1));
+    }
+
+    #[test]
+    fn test_set_op_graph_obj_ref_set_symmetric_difference() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
+        let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
+        
+        let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::SymmetricDifference);
+        assert_eq!(result.len(), 2);
+        assert!(result.contains(&&n1));
+        assert!(result.contains(&&n3));
+        assert!(!result.contains(&&n2));
+    }
+
+    // Tests for the second function
+    #[test]
+    fn test_set_op_graph_obj_set_union() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
+        let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
+        
+        let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::Union);
+        assert_eq!(result.len(), 3);
+        assert!(result.contains(&n1));
+        assert!(result.contains(&n2));
+        assert!(result.contains(&n3));
+    }
+}
