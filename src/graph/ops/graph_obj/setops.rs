@@ -87,6 +87,7 @@ mod tests {
     use super::*; // brings in the parent scope to current module scope
     use crate::graph::types::node::Node;
 
+    // Tests for the first function
     #[test]
     fn test_set_op_graph_obj_ref_set_union() {
         let n1 = Node::empty("n1");
@@ -162,5 +163,53 @@ mod tests {
         assert!(result.contains(&n1));
         assert!(result.contains(&n2));
         assert!(result.contains(&n3));
+    }
+
+    #[test]
+    fn test_set_op_graph_obj_set_intersection() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
+        let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
+        
+        let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::Intersection);
+        assert_eq!(result.len(), 1);
+        assert!(result.contains(&n2));
+        assert!(!result.contains(&n1));
+        assert!(!result.contains(&n3));
+    }
+
+    #[test]
+    fn test_set_op_graph_obj_set_difference() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
+        let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
+        
+        let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::Difference);
+        assert_eq!(result.len(), 1);
+        assert!(result.contains(&n1));
+        assert!(!result.contains(&n2));
+        assert!(!result.contains(&n3));
+    }
+
+    #[test]
+    fn test_set_op_graph_obj_set_symmetric_difference() {
+        let n1 = Node::empty("n1");
+        let n2 = Node::empty("n2");
+        let n3 = Node::empty("n3");
+        
+        let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
+        let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
+        
+        let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::SymmetricDifference);
+        assert_eq!(result.len(), 2);
+        assert!(result.contains(&n1));
+        assert!(result.contains(&n3));
+        assert!(!result.contains(&n2));
     }
 }
