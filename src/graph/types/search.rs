@@ -62,7 +62,7 @@ impl<'graph_lifetime> CycleInfoTrait<'graph_lifetime> for CycleInfo<'graph_lifet
         ancestor_first_time: usize,
         ancestor_last_time: Option<usize>,
         current_final_time: usize,
-    ) -> CycleInfo {
+    ) -> CycleInfo<'graph_lifetime> {
         CycleInfo {
             _ancestor: ancestor,
             _before: before,
@@ -74,21 +74,27 @@ impl<'graph_lifetime> CycleInfoTrait<'graph_lifetime> for CycleInfo<'graph_lifet
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct DepthFirstResult<'a, N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> {
-    _forest: HashMap<String, HashSet<&'a E>>,
-    _trees: HashMap<String, HashMap<String, String>>,
+pub struct DepthFirstResult<
+    'graph_lifetime,
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    C: CycleInfoTrait<'graph_lifetime>,
+> {
+    _forest: HashMap<&'graph_lifetime String, HashSet<&'graph_lifetime E>>,
+    _trees:
+        HashMap<&'graph_lifetime String, HashMap<&'graph_lifetime String, &'graph_lifetime String>>,
     _nb_component: usize,
-    _components: HashMap<String, HashSet<String>>,
-    _first_visit_times: HashMap<String, usize>,
-    _last_visit_times: HashMap<String, usize>,
+    _components: HashMap<&'graph_lifetime String, HashSet<&'graph_lifetime String>>,
+    _first_visit_times: HashMap<&'graph_lifetime String, usize>,
+    _last_visit_times: HashMap<&'graph_lifetime String, usize>,
     _cycle_info: C,
     _node_type: PhantomData<N>,
     _id: String,
     _data: HashMap<String, Vec<String>>,
 }
 
-impl<N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> fmt::Display
-    for DepthFirstResult<'_, N, E, C>
+impl<'graph_lifetime, N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait<'graph_lifetime>>
+    fmt::Display for DepthFirstResult<'graph_lifetime, N, E, C>
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let nid: &String = &self._id;
@@ -101,14 +107,16 @@ impl<N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> fmt::Display
     }
 }
 
-impl<N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> Hash for DepthFirstResult<'_, N, E, C> {
+impl<'graph_lifetime, N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait<'graph_lifetime>> Hash
+    for DepthFirstResult<'graph_lifetime, N, E, C>
+{
     fn hash<H: Hasher>(&self, state: &mut H) {
         self._id.hash(state);
     }
 }
 
-impl<N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> GraphObjectTrait
-    for DepthFirstResult<'_, N, E, C>
+impl<'graph_lifetime, N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait<'graph_lifetime>>
+    GraphObjectTrait for DepthFirstResult<'graph_lifetime, N, E, C>
 {
     fn id(&self) -> &String {
         &self._id
@@ -118,25 +126,28 @@ impl<N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> GraphObjectTrait
     }
 }
 
-impl<'a, N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> DepthFirstResultTrait<'a, N, E, C>
-    for DepthFirstResult<'a, N, E, C>
+impl<'graph_lifetime, N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait<'graph_lifetime>>
+    DepthFirstResultTrait<'graph_lifetime, N, E, C> for DepthFirstResult<'graph_lifetime, N, E, C>
 {
-    fn forest(&self) -> &HashMap<String, HashSet<&'a E>> {
+    fn forest(&self) -> &HashMap<&'graph_lifetime String, HashSet<&'graph_lifetime E>> {
         &self._forest
     }
-    fn trees(&self) -> &HashMap<String, HashMap<String, String>> {
+    fn trees(
+        &self,
+    ) -> &HashMap<&'graph_lifetime String, HashMap<&'graph_lifetime String, &'graph_lifetime String>>
+    {
         &self._trees
     }
     fn nb_component(&self) -> usize {
         self._nb_component
     }
-    fn components(&self) -> &HashMap<String, HashSet<String>> {
+    fn components(&self) -> &HashMap<&'graph_lifetime String, HashSet<&'graph_lifetime String>> {
         &self._components
     }
-    fn first_visit_times(&self) -> &HashMap<String, usize> {
+    fn first_visit_times(&self) -> &HashMap<&'graph_lifetime String, usize> {
         &self._first_visit_times
     }
-    fn last_visit_times(&self) -> &HashMap<String, usize> {
+    fn last_visit_times(&self) -> &HashMap<&'graph_lifetime String, usize> {
         &self._last_visit_times
     }
     fn cycle_info(&self) -> &C {
@@ -145,13 +156,19 @@ impl<'a, N: NodeTrait, E: EdgeTrait<N>, C: CycleInfoTrait> DepthFirstResultTrait
 
     fn create(
         &self,
-        forest: HashMap<String, HashSet<&'a E>>,
-        tree: HashMap<String, HashMap<String, String>>,
-        components: HashMap<String, HashSet<String>>,
-        visit_times: (HashMap<String, usize>, HashMap<String, usize>),
+        forest: HashMap<&'graph_lifetime String, HashSet<&'graph_lifetime E>>,
+        tree: HashMap<
+            &'graph_lifetime String,
+            HashMap<&'graph_lifetime String, &'graph_lifetime String>,
+        >,
+        components: HashMap<&'graph_lifetime String, HashSet<&'graph_lifetime String>>,
+        visit_times: (
+            HashMap<&'graph_lifetime String, usize>,
+            HashMap<&'graph_lifetime String, usize>,
+        ),
         cycle: C,
     ) -> Self {
-        DepthFirstResult::<'a, N, E, C> {
+        DepthFirstResult::<'graph_lifetime, N, E, C> {
             _forest: forest,
             _trees: tree,
             _nb_component: components.len(),
