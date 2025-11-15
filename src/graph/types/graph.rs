@@ -58,6 +58,15 @@ impl<T: NodeTrait, E: EdgeTrait<T>> GraphObject for Graph<T, E> {
     fn data(&self) -> &HashMap<String, Vec<String>> {
         &self.graph_data
     }
+
+    fn null() -> Graph<T, E> {
+        let idstr = String::from("");
+        Graph {
+            graph_id: idstr,
+            gdata: (HashSet::new(), HashSet::new()),
+            graph_data: HashMap::new(),
+        }
+    }
 }
 
 impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphTrait<T, E> for Graph<T, E> {
@@ -169,11 +178,9 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     /// empty constructor.
     /// Creates an empty graph that has no edge and vertex.
     pub fn empty(graph_id: &str) -> Graph<T, E> {
-        Graph {
-            graph_id: graph_id.to_string(),
-            gdata: (HashSet::new(), HashSet::new()),
-            graph_data: HashMap::new(),
-        }
+        let mut g = Graph::null();
+        g.graph_id = graph_id.to_string();
+        g
     }
     /// construct [Graph] from graph like object with borrowing
     pub fn from_graphish_ref<G: GraphTrait<T, E>>(g: &G) -> Graph<T, E> {

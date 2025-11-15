@@ -32,7 +32,12 @@ use uuid::Uuid;
 /// use std::collections::HashSet;
 ///
 /// fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
-///     Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+///     let s = Node::empty(n1_id);
+///     let e = Node::empty(n2_id);
+///     let edge = Edge:null();
+///     let edge.start_node = s;
+///     let edge.end_node = e;
+///     edge
 /// }
 
 /// let e1 = mk_uedge("n1", "n2", "e1");
@@ -898,9 +903,14 @@ mod tests {
         }
         hs
     }
+
     fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
-        Edge::empty(e_id, EdgeType::Undirected, n1_id, n2_id)
+        let s = Node::empty(n1_id);
+        let e = Node::empty(n2_id);
+        let edge = Edge::undirected(String::from(e_id), s, e, HashMap::new());
+        edge
     }
+
     fn mk_edges(es: Vec<Edge<Node>>) -> HashSet<Edge<Node>> {
         let mut hs = HashSet::new();
         for e in es {

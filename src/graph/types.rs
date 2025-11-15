@@ -12,8 +12,8 @@ pub mod node;
 /// graph object implements [GraphObject] trait.
 pub mod graph;
 
-/// path object implements [Path] trait.
-pub mod path;
+// path object implements [Path] trait.
+// pub mod path;
 
-/// search result object
-pub mod search;
+// search result object
+// pub mod search;

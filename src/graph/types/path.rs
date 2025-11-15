@@ -86,10 +86,13 @@ where
 /// path is essentially a graph
 /// path object as defined in Diestel 2017, p. 6
 #[derive(Debug, Eq, PartialEq, Clone)]
-pub struct Path<N: NodeTrait, E: EdgeTrait<N>, G: GraphTrait<N, E> + GraphObjectTrait> {
-    graph: G,
-    ends: (N, N),
-    edge_type: PhantomData<E>,
+pub struct Path<N: NodeTrait, E: EdgeTrait<N>> {
+    /// edges of the path graph
+    gdata: HashSet<E>,
+    /// graph identifier required for [GraphObject] trait
+    graph_id: String,
+    /// graph data required for [GraphObject] trait
+    graph_data: HashMap<String, Vec<String>>,
 }
 
 /// Path objects are hashed using their graphs
@@ -100,9 +103,7 @@ impl<T: NodeTrait, E: EdgeTrait<T>, G: GraphTrait<T, E> + GraphObjectTrait> Hash
 }
 
 /// Path objects display their identifier when serialized to string.
-impl<N: NodeTrait, E: EdgeTrait<N>, G: GraphTrait<N, E> + GraphObjectTrait> fmt::Display
-    for Path<N, E, G>
-{
+impl<N: NodeTrait, E: EdgeTrait<N>> fmt::Display for Path<N, E> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let nid = &self.graph.id();
         write!(f, "<Path id='{}'>", nid)

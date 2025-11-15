@@ -100,6 +100,10 @@ impl GraphObject for Node {
     fn data(&self) -> &HashMap<String, Vec<String>> {
         &self.node_data
     }
+    fn null() -> Node {
+        let nid = String::from("");
+        Node::empty(&nid)
+    }
 }
 
 impl NodeTrait for Node {

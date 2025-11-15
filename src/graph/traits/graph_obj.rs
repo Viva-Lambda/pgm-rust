@@ -11,4 +11,7 @@ pub trait GraphObject: fmt::Display + Hash + Eq {
     fn id(&self) -> &String;
     /// data that is associated to graph object
     fn data(&self) -> &HashMap<String, Vec<String>>;
+
+    /// null constructor
+    fn null() -> Self;
 }

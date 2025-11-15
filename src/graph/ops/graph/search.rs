@@ -11,10 +11,10 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::option::Option;
 
-fn get_vertex_lst<'a, N: NodeTrait>(
-    vs: HashMap<String, &'a N>,
-    start_node: Option<&'a N>,
-) -> (Vec<String>, HashMap<String, &'a N>) {
+fn get_vertex_lst<'nodeLT, N: NodeTrait>(
+    vs: HashMap<String, &'nodeLT N>,
+    start_node: Option<&'nodeLT N>,
+) -> (Vec<String>, HashMap<String, &'nodeLT N>) {
     let mut ns = vs;
     match start_node {
         Some(nref) => {
@@ -54,6 +54,22 @@ where
         cycles: &mut cycles,
     };
     dfs_record
+}
+
+fn depth_first_search_v2<'graphLT, N, E, G, F, C, DFSResult>(
+    g: &'graphLT G,
+    edge_generator: &F,
+    check_cycle: bool,
+    start_node: Option<&'graphLT N>,
+) -> DFSResult
+where
+    N: NodeTrait,
+    E: EdgeTrait<N>,
+    G: GraphTrait<N, E>,
+    F: Fn(&'graphLT G, &'graphLT N) -> HashSet<&'graphLT E>,
+    C: CycleInfoTrait,
+    DFSResult: DepthFirstResultTrait<'graphLT, N, E, C>,
+{
 }
 
 fn depth_first_search<'a, N, E, G, F, C, DFSResult>(

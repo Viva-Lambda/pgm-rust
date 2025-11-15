@@ -88,6 +88,23 @@ impl<T: NodeTrait> GraphObject for Edge<T> {
     fn data(&self) -> &HashMap<String, Vec<String>> {
         &self.info.data
     }
+
+    fn null() -> Edge<T> {
+        let start = T::null();
+        let end = T::null();
+        let idstr = String::from("");
+        let h: HashMap<String, Vec<String>> = HashMap::new();
+        let info = EdgeInfo {
+            id: idstr,
+            edge_type: EdgeType::Undirected,
+            data: h,
+        };
+        Edge {
+            info,
+            start_node: start,
+            end_node: end,
+        }
+    }
 }
 
 impl<NodeType: NodeTrait> EdgeTrait<NodeType> for Edge<NodeType> {
@@ -202,27 +219,8 @@ impl<T: NodeTrait> Edge<T> {
         }
     }
     /// empty edge constructor.
-    pub fn empty(
-        edge_id: &str,
-        edge_type: EdgeType,
-        start_node_id: &str,
-        end_node_id: &str,
-    ) -> Edge<T> {
-        let h1: HashMap<String, Vec<String>> = HashMap::new();
-        let n1 = NodeTrait::create(start_node_id.to_string(), h1);
-        let h2: HashMap<String, Vec<String>> = HashMap::new();
-        let n2 = NodeTrait::create(end_node_id.to_string(), h2);
-        let h: HashMap<String, Vec<String>> = HashMap::new();
-        let info = EdgeInfo {
-            id: edge_id.to_string(),
-            edge_type,
-            data: h,
-        };
-        Edge {
-            info,
-            start_node: n1,
-            end_node: n2,
-        }
+    pub fn empty(&self) -> Edge<T> {
+        Edge::null()
     }
 }
 #[cfg(test)]

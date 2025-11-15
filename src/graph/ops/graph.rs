@@ -12,5 +12,5 @@ pub mod node;
 /// edge operations
 pub mod edge;
 
-/// search related operations
-pub mod search;
+// search related operations
+// pub mod search;
