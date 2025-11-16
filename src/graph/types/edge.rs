@@ -219,8 +219,15 @@ impl<T: NodeTrait> Edge<T> {
         }
     }
     /// empty edge constructor.
-    pub fn empty(&self) -> Edge<T> {
+    pub fn empty() -> Edge<T> {
         Edge::null()
+    }
+    pub fn from_ids(eid: &str, etype: EdgeType, start_id: &str, end_id: &str) -> Edge<T> {
+        let mut e = Edge::null();
+        e.info.id = String::from(eid);
+        e.info.edge_type = etype;
+        e.start_node.id = String::from(start_id);
+        e.end_node.id = String::from(end_id);
     }
 }
 #[cfg(test)]

@@ -15,32 +15,24 @@ pub enum SetOpKind {
     SymmetricDifference,
 }
 /// set operation on set of references
-pub fn set_op_graph_obj_ref_set<'a, T: GraphObject>(
-    a: &'a HashSet<&T>,
-    b: &'a HashSet<&T>,
+pub fn set_op_graph_obj_ref_set<'setLT, 'graphLT, T: GraphObject>(
+    a: &'setLT HashSet<&'graphLT T>,
+    b: &'setLT HashSet<&'graphLT T>,
     set_op_kind: SetOpKind,
-) -> HashSet<&'a T> {
-    let mut hset = HashSet::new();
+) -> HashSet<&'graphLT T> {
+    let mut hset: HashSet<&'graphLT T> = HashSet::new();
     match set_op_kind {
         SetOpKind::Intersection => {
-            for c in a.intersection(&b) {
-                hset.insert(c.clone());
-            }
+            hset = a.intersection(&b).cloned().collect();
         }
         SetOpKind::Union => {
-            for c in a.union(&b) {
-                hset.insert(c.clone());
-            }
+            hset = a.union(&b).cloned().collect();
         }
         SetOpKind::Difference => {
-            for c in a.difference(&b) {
-                hset.insert(c.clone());
-            }
+            hset = a.difference(&b).cloned().collect();
         }
         SetOpKind::SymmetricDifference => {
-            for c in a.symmetric_difference(&b) {
-                hset.insert(c.clone());
-            }
+            hset = a.symmetric_difference(&b).cloned().collect();
         }
     }
     hset
@@ -93,10 +85,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
         let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
-        
+
         let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::Union);
         assert_eq!(result.len(), 3);
         assert!(result.contains(&&n1));
@@ -109,10 +101,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
         let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
-        
+
         let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::Intersection);
         assert_eq!(result.len(), 1);
         assert!(result.contains(&&n2));
@@ -123,10 +115,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
         let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
-        
+
         let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::Difference);
         assert_eq!(result.len(), 1);
         assert!(result.contains(&&n1));
@@ -137,10 +129,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<&Node> = HashSet::from([&n1, &n2]);
         let set_b: HashSet<&Node> = HashSet::from([&n2, &n3]);
-        
+
         let result = set_op_graph_obj_ref_set(&set_a, &set_b, SetOpKind::SymmetricDifference);
         assert_eq!(result.len(), 2);
         assert!(result.contains(&&n1));
@@ -154,10 +146,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
         let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
-        
+
         let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::Union);
         assert_eq!(result.len(), 3);
         assert!(result.contains(&n1));
@@ -170,10 +162,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
         let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
-        
+
         let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::Intersection);
         assert_eq!(result.len(), 1);
         assert!(result.contains(&n2));
@@ -186,10 +178,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
         let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
-        
+
         let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::Difference);
         assert_eq!(result.len(), 1);
         assert!(result.contains(&n1));
@@ -202,10 +194,10 @@ mod tests {
         let n1 = Node::empty("n1");
         let n2 = Node::empty("n2");
         let n3 = Node::empty("n3");
-        
+
         let set_a: HashSet<Node> = HashSet::from([n1.clone(), n2.clone()]);
         let set_b: HashSet<Node> = HashSet::from([n2.clone(), n3.clone()]);
-        
+
         let result = set_op_graph_obj_set(&set_a, &set_b, SetOpKind::SymmetricDifference);
         assert_eq!(result.len(), 2);
         assert!(result.contains(&n1));
@@ -213,3 +205,4 @@ mod tests {
         assert!(!result.contains(&n2));
     }
 }
+

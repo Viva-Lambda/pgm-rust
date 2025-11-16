@@ -2,12 +2,12 @@
 
 // call the GraphObject trait
 use crate::graph::traits::graph_obj::GraphObject;
-use crate::graph::traits::misc::SetOp;
 use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::traits::node::VertexSet as VertexSetTrait;
 
-use crate::graph::ops::graph_obj::setops::set_op_graph_obj_set;
-use crate::graph::ops::graph_obj::setops::SetOpKind;
+// call the utilities
+use crate::graph::types::utils::from_borrowed_data;
+use crate::graph::types::utils::to_borrowed_data;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -46,7 +46,6 @@ impl<N: NodeTrait> VertexSetTrait<N> for Vertices<N> {
     }
 }
 
-
 impl Node {
     /// constructor for Node object
     pub fn new(nid: String, ndata: HashMap<String, Vec<String>>) -> Node {
@@ -57,13 +56,8 @@ impl Node {
     }
     /// constructor for node like objects that implement node trait with borrowing
     pub fn from_nodish_ref<T: NodeTrait>(n: &T) -> Node {
-        let data_iter = n.data().into_iter();
-        let data_mapped = data_iter.map(|(key, value)| {
-            let new_key = key.to_string();
-            let new_value = value.into_iter().map(|v| v.to_string()).collect();
-            (new_key, new_value)
-        });
-        let data = data_mapped.collect();
+        let ndata = n.data();
+        let data = from_borrowed_data(&ndata);
         Node {
             node_id: n.id().to_string(),
             node_data: data,
@@ -102,8 +96,9 @@ impl GraphObject for Node {
         &self.node_id
     }
 
-    fn data(&self) -> &HashMap<&str, Vec<&str>> {
-        &self.node_data
+    fn data(&self) -> HashMap<&str, Vec<&str>> {
+        let data = to_borrowed_data(&self.node_data);
+        data
     }
 
     fn null() -> Node {
@@ -121,7 +116,7 @@ impl GraphObject for Node {
     fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
         let mut n = Node::null();
         n.node_id = self.node_id.clone();
-        n.node_data = data;
+        n.node_data = from_borrowed_data(&data);
         n
     }
 }
@@ -129,24 +124,6 @@ impl GraphObject for Node {
 impl NodeTrait for Node {
     fn create(nid: String, ndata: HashMap<String, Vec<String>>) -> Node {
         Node::new(nid, ndata)
-    }
-}
-
-impl SetOp for Node {
-    type Input = HashSet<Node>;
-    type Output = HashSet<Node>;
-
-    fn intersection(a: Self::Input, other: Self::Input) -> Self::Output {
-        set_op_graph_obj_set(&a, &other, SetOpKind::Intersection)
-    }
-    fn union(a: Self::Input, other: Self::Input) -> Self::Output {
-        set_op_graph_obj_set(&a, &other, SetOpKind::Union)
-    }
-    fn difference(a: Self::Input, other: Self::Input) -> Self::Output {
-        set_op_graph_obj_set(&a, &other, SetOpKind::Difference)
-    }
-    fn symmetric_difference(a: Self::Input, other: Self::Input) -> Self::Output {
-        set_op_graph_obj_set(&a, &other, SetOpKind::SymmetricDifference)
     }
 }
 
@@ -176,14 +153,11 @@ mod tests {
             node_id: String::from("mnode"),
             node_data: my_map,
         };
-        let mut my_map2: HashMap<String, Vec<String>> = HashMap::new();
-        let myv2 = vec![
-            String::from("awesome"),
-            String::from("string"),
-            String::from("stuff"),
-        ];
-        my_map2.insert(String::from("my"), myv2);
-        assert_eq!(my_node.data(), &my_map2);
+        let mut my_map2: HashMap<&str, Vec<&str>> = HashMap::new();
+        let myv2 = vec!["awesome", "string", "stuff"];
+        my_map2.insert("my", myv2);
+
+        assert_eq!(my_node.data(), my_map2);
     }
 
     #[test]

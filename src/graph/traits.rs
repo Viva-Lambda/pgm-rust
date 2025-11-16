@@ -1,7 +1,7 @@
 //
 
-/// behaviors that defines a [Graph]
-pub mod graph;
+// behaviors that defines a [Graph]
+// pub mod graph;
 
 /// behaviors that defines a [GraphObject]
 /// everything that implements a [GraphObject] can be used as a node.
@@ -18,11 +18,11 @@ pub mod edge;
 /// diverse behaviors that help with lib implementation
 pub mod misc;
 
-/// behaviors that defines a [Tree]
-pub mod tree;
+// behaviors that defines a [Tree]
+// pub mod tree;
 
-/// behaviors that defines a [Path]
-pub mod path;
+// behaviors that defines a [Path]
+// pub mod path;
 
-/// behaviors that define a search result
-pub mod search;
+// behaviors that define a search result
+// pub mod search;

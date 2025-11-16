@@ -4,10 +4,10 @@
 #![deny(rustdoc::missing_doc_code_examples)]
 
 /// factors defining random variable relations
-pub mod factor;
+// pub mod factor;
 
 /// graph theoretical structures
 pub mod graph;
 
-/// probabilistic graphs
-pub mod pgm;
+// probabilistic graphs
+// pub mod pgm;
