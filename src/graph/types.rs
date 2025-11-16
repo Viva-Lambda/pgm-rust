@@ -7,8 +7,8 @@ pub mod utils;
 /// edge type such as directed, undirected
 pub mod edgetype;
 
-// edge object implements [GraphObject] trait.
-// pub mod edge;
+/// edge object implements [GraphObject] trait.
+pub mod edge;
 
 /// node object implements [GraphObject] trait.
 pub mod node2;

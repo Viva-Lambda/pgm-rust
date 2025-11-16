@@ -69,7 +69,7 @@ impl Node {
         Node::from_nodish_ref(&n)
     }
     /// empty constructor
-    pub fn empty(nid: &str) -> Node {
+    pub fn from_id(nid: &str) -> Node {
         let ndata: HashMap<String, Vec<String>> = HashMap::new();
         Node {
             node_id: nid.to_string(),
@@ -116,7 +116,7 @@ impl GraphObject for Node {
 
     fn null() -> Node {
         let nid = String::from("");
-        Node::empty(&nid)
+        Node::from_id(&nid)
     }
 
     fn set_id(&self, idstr: &str) -> Self {
@@ -221,8 +221,8 @@ mod tests {
     }
 
     #[test]
-    fn test_node_empty() {
-        let node = Node::empty("n_empty");
+    fn test_node_from_id() {
+        let node = Node::from_id("n_empty");
         assert_eq!(node.node_id, "n_empty");
         assert!(node.node_data.is_empty());
     }
@@ -308,7 +308,7 @@ mod tests {
 
     #[test]
     fn test_node_display() {
-        let node = Node::empty("n_fmt");
+        let node = Node::from_id("n_fmt");
         assert_eq!(format!("{}", node), "<Node id='n_fmt'/>");
     }
 
@@ -365,8 +365,8 @@ mod tests {
 
     #[test]
     fn test_vertices_members() {
-        let n1 = Node::empty("v1");
-        let n2 = Node::empty("v2");
+        let n1 = Node::from_id("v1");
+        let n2 = Node::from_id("v2");
         let mut initial_set = HashSet::new();
         initial_set.insert(n1.clone());
         initial_set.insert(n2.clone());
