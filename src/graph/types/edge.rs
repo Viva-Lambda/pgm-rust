@@ -6,6 +6,10 @@ use crate::graph::traits::graph_obj::GraphObject;
 
 use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::types::edgetype::EdgeType;
+use crate::graph::types::utils::from_borrowed_data;
+use crate::graph::types::utils::to_borrowed_data;
+
+
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
@@ -14,7 +18,7 @@ use std::marker::PhantomData;
 use std::hash::{Hash, Hasher};
 
 /// Edge info object.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone)]
 pub struct EdgeInfo {
     id: String,
     data: HashMap<String, Vec<String>>,
@@ -23,7 +27,7 @@ pub struct EdgeInfo {
 
 /// Edge object.
 /// Formally defined as set with two elements, see Diestel 2017, p. 2
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Edge<T: NodeTrait> {
     info: EdgeInfo,
     start_node: T,
@@ -66,8 +70,8 @@ impl<T: NodeTrait> fmt::Display for Edge<T> {
         let et = &self.info.edge_type;
         write!(
             f,
-            "<Edge id='{}' start='{}' end='{}' type='{}'/>",
-            eid, n1, n2, et
+            "<Edge id='{}' type='{}'><start>{}</start><end>{}</end></Edge>",
+            eid, et, n1, n2
         )
     }
 }
@@ -80,13 +84,30 @@ impl<T: NodeTrait> Hash for Edge<T> {
     }
 }
 
+impl PartialEq for EdgeInfo {
+    fn eq(&self, other: &Self) -> bool {
+        // Equality compares ID ONLY (to satisfy hash collision requirements)
+        self.id == other.id
+    }
+}
+impl Eq for EdgeInfo {}
+
+impl<T: NodeTrait> PartialEq for Edge<T> {
+    fn eq(&self, other: &Self) -> bool {
+        // Equality compares ID ONLY (to satisfy hash collision requirements)
+        self.info == other.info
+    }
+}
+
+impl<T: NodeTrait> Eq for Edge<T> {}
+
 impl<T: NodeTrait> GraphObject for Edge<T> {
-    fn id(&self) -> &String {
+    fn id(&self) -> &str {
         &self.info.id
     }
 
-    fn data(&self) -> &HashMap<String, Vec<String>> {
-        &self.info.data
+    fn data(&self) -> HashMap<&str, Vec<&str>> {
+to_borrowed_data(&self.info.data)
     }
 
     fn null() -> Edge<T> {
