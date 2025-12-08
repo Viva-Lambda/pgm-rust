@@ -1,6 +1,6 @@
-# Workflow for cargo check
+# Workflow for cargo build
 
-name: Cargo Check
+name: Cargo Build
 
 on:
   push:
@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    name: Run Check
+    name: Run Build
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -23,4 +23,4 @@ jobs:
       uses: dtolnay/rust-toolchain@stable
     
     - name: Build project
-      run: cargo check --verbose
+      run: cargo build --verbose
