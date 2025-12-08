@@ -38,11 +38,16 @@ pub trait Graph<NodeType: Node, EdgeType: Edge<NodeType>>: GraphObject {
         let vs = self.vertices();
         self._idmap::<NodeType>(vs)
     }
-    fn _idmap<'graphLT, T: GraphObject>(
-        &'graphLT self,
-        ts: HashSet<&'graphLT T>,
-    ) -> HashMap<String, &'graphLT T> {
-        let mut hs: HashMap<String, &'graphLT T> = HashMap::new();
+
+    /// Helper method to create an id-to-object map from a set of graph objects
+    
+    fn _idmap<'graph_lt, T: GraphObject>(
+        // Changed lifetime name from 'graphLT to 'graph_lt' 
+        // to follow Rust's snake_case naming convention (this fixes the warning too)
+        &'graph_lt self,
+        ts: HashSet<&'graph_lt T>,
+    ) -> HashMap<String, &'graph_lt T> {
+        let mut hs: HashMap<String, &'graph_lt T> = HashMap::new();
         for v in ts {
             let id: String = v.id().to_string();
             hs.insert(id, v);

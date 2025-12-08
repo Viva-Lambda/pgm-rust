@@ -5,6 +5,7 @@ use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
+use crate::graph::types::utils::{from_borrowed_data, to_borrowed_data};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
@@ -50,13 +51,25 @@ impl<T: NodeTrait, E: EdgeTrait<T>> fmt::Display for Graph<T, E> {
     }
 }
 
-impl<T: NodeTrait, E: EdgeTrait<T>> GraphObject for Graph<T, E> {
-    fn id(&self) -> &String {
+// Changed: Added missing Clone bound to E for GraphObject implementation
+impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphObject for Graph<T, E> {
+    // Changed: Return &str instead of &String to match trait
+    fn id(&self) -> &str {
         &self.graph_id
     }
 
-    fn data(&self) -> &HashMap<String, Vec<String>> {
-        &self.graph_data
+    // Changed: Return HashMap<&str, Vec<&str>> instead of &HashMap<String, Vec<String>>
+    fn data(&self) -> HashMap<&str, Vec<&str>> {
+        to_borrowed_data(&self.graph_data)
+    }
+
+    // Added: Missing set_id method
+    fn set_id(&self, idstr: &str) -> Self {
+        let mut g = Self::null();
+        g.graph_id = idstr.to_string();
+        g.graph_data = self.graph_data.clone();
+        g.gdata = self.gdata.clone();
+        g
     }
 
     fn null() -> Graph<T, E> {
@@ -66,6 +79,15 @@ impl<T: NodeTrait, E: EdgeTrait<T>> GraphObject for Graph<T, E> {
             gdata: (HashSet::new(), HashSet::new()),
             graph_data: HashMap::new(),
         }
+    }
+
+    // Added: Missing set_data method
+    fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
+        let mut g = Self::null();
+        g.graph_id = self.graph_id.clone();
+        g.graph_data = from_borrowed_data(&data);
+        g.gdata = self.gdata.clone();
+        g
     }
 }
 
@@ -186,8 +208,8 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     pub fn from_graphish_ref<G: GraphTrait<T, E>>(g: &G) -> Graph<T, E> {
         let (edges, mset) = get_vertices_from_refset(g.vertices(), g.edges());
         Graph {
-            graph_id: g.id().clone(),
-            graph_data: g.data().clone(),
+            graph_id: g.id().to_string(), // Changed: Use to_string() instead of clone()
+            graph_data: from_borrowed_data(&g.data()), // Changed: Convert borrowed data to owned
             gdata: (mset, edges),
         }
     }
@@ -196,7 +218,7 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
         let (edges, mset) = get_vertices_from_refset(g.vertices(), g.edges());
         Graph {
             graph_id: g.id().to_string(),
-            graph_data: g.data().clone(),
+            graph_data: from_borrowed_data(&g.data()), // Changed: Convert borrowed data to owned
             gdata: (mset, edges),
         }
     }
@@ -252,7 +274,7 @@ mod tests {
 
     use super::*; // brings in the parent scope to current module scope
     use crate::graph::types::edge::Edge;
-    use crate::graph::types::node::Node;
+    use crate::graph::types::node2::Node;
 
     // mk node
     fn mk_node(n_id: &str) -> Node {
