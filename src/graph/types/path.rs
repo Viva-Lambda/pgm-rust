@@ -113,8 +113,8 @@ impl<N: NodeTrait, E: EdgeTrait<N>> fmt::Display for Path<N, E> {
 impl<T: NodeTrait, E: EdgeTrait<T>, G: GraphTrait<T, E> + GraphObjectTrait> GraphObjectTrait
     for Path<T, E, G>
 {
-    fn id(&self) -> &String {
-        &self.graph.id()
+    fn id(&self) -> &str {
+        &self.graph_id
     }
 
     fn data(&self) -> &HashMap<String, Vec<String>> {
