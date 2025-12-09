@@ -3,6 +3,7 @@
 
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::edge::EdgeSet as EdgeSetTrait;
+use crate::graph::types::utils::{from_borrowed_data, to_borrowed_data};
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject as GraphObjectTrait;
 use crate::graph::traits::node::Node as NodeTrait;
@@ -113,13 +114,43 @@ impl<N: NodeTrait, E: EdgeTrait<N>> fmt::Display for Path<N, E> {
 impl<T: NodeTrait, E: EdgeTrait<T>, G: GraphTrait<T, E> + GraphObjectTrait> GraphObjectTrait
     for Path<T, E, G>
 {
+    /// id string
     fn id(&self) -> &str {
         &self.graph_id
     }
 
-    fn data(&self) -> &HashMap<String, Vec<String>> {
-        &self.graph.data()
+    
+    fn data(&self) -> HashMap<&str, Vec<&str>> {
+        to_borrowed_data(&self.graph_data)
     }
+
+    // Added: Missing set_id method
+    fn set_id(&self, idstr: &str) -> Self {
+        let mut g = Self::null();
+        g.graph_id = idstr.to_string();
+        g.graph_data = self.graph_data.clone();
+        g.gdata = self.gdata.clone();
+        g
+    }
+
+    fn null() -> Path<T, E> {
+        let idstr = String::from("");
+        Path {
+            graph_id: idstr,
+            gdata: HashSet::new(),
+            graph_data: HashMap::new(),
+        }
+    }
+
+    // Added: Missing set_data method
+    fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
+        let mut g = Self::null();
+        g.graph_id = self.graph_id.clone();
+        g.graph_data = from_borrowed_data(&data);
+        g.gdata = self.gdata.clone();
+        g
+    }
+
 }
 
 impl<T: NodeTrait, E: EdgeTrait<T> + Clone, G: GraphTrait<T, E> + GraphObjectTrait> GraphTrait<T, E>
