@@ -11,7 +11,7 @@ pub mod edgetype;
 pub mod edge;
 
 /// node object implements [GraphObject] trait.
-pub mod node2;
+pub mod node;
 
 // graph object implements [GraphObject] trait.
 pub mod graph;

@@ -339,7 +339,7 @@ impl<T: NodeTrait> Edge<T> {
 mod tests {
 
     use super::*; // brings in the parent scope to current module scope
-    use crate::graph::types::node2::Node;
+    use crate::graph::types::node::Node;
 
     fn create_mock_node(idstr: &str) -> Node {
         Node::from_id(idstr)
