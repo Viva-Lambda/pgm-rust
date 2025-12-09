@@ -274,7 +274,7 @@ mod tests {
 
     use super::*; // brings in the parent scope to current module scope
     use crate::graph::types::edge::Edge;
-    use crate::graph::types::node2::Node;
+    use crate::graph::types::node::Node;
 
     // mk node
     fn mk_node(n_id: &str) -> Node {
