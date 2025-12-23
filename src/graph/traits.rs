@@ -25,8 +25,8 @@ pub mod graph;
 // behaviors that defines a [Tree]
 // pub mod tree;
 
-// behaviors that defines a [Path]
-// pub mod path;
+/// behaviors that defines a [Path]
+pub mod path;
 
 // behaviors that define a search result
 // pub mod search;
