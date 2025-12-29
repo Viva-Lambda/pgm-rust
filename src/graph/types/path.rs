@@ -3,7 +3,7 @@
 
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::edge::EdgeSet as EdgeSetTrait;
-use crate::graph::types::utils::{from_borrowed_data, to_borrowed_data};
+use crate::graph::traits::utils::{from_borrowed_data, to_borrowed_data};
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject as GraphObjectTrait;
 use crate::graph::traits::node::Node as NodeTrait;
@@ -97,7 +97,7 @@ pub struct Path<N: NodeTrait, E: EdgeTrait<N>> {
 }
 
 /// Path objects are hashed using their graphs
-impl<T: NodeTrait, E: EdgeTrait<T>, G: GraphTrait<T, E> + GraphObjectTrait> Hash for Path<T, E, G> {
+impl<T: NodeTrait, E: EdgeTrait<T>> Hash for Path<T, E> {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.graph.hash(state);
     }

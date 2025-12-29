@@ -1,13 +1,14 @@
 // graph node
 
 // call the GraphObject trait
+use crate::graph::traits::generic::default_all_impl;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::traits::node::VertexSet as VertexSetTrait;
 
 // call the utilities
-use crate::graph::types::utils::from_borrowed_data;
-use crate::graph::types::utils::to_borrowed_data;
+use crate::graph::traits::utils::from_borrowed_data;
+use crate::graph::traits::utils::to_borrowed_data;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -18,9 +19,10 @@ use std::hash::{Hash, Hasher};
 /// Formally defined as a member/point/vertex of a graph, see Diestel 2017, p.2
 #[derive(Debug, Clone)]
 pub struct Node {
-    node_id: String,
-    node_data: HashMap<String, Vec<String>>,
+    _id: String,
+    _data: HashMap<String, Vec<String>>,
 }
+default_all_impl!(Node);
 
 /// Short hand for set of nodes
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -50,8 +52,8 @@ impl Node {
     /// constructor for Node object
     pub fn new(nid: String, ndata: HashMap<String, Vec<String>>) -> Node {
         Node {
-            node_id: nid,
-            node_data: ndata,
+            _id: nid,
+            _data: ndata,
         }
     }
     /// constructor for node like objects that implement node trait with borrowing
@@ -59,8 +61,8 @@ impl Node {
         let ndata = n.data();
         let data = from_borrowed_data(&ndata);
         Node {
-            node_id: n.id().to_string(),
-            node_data: data,
+            _id: n.id().to_string(),
+            _data: data,
         }
     }
 
@@ -72,65 +74,16 @@ impl Node {
     pub fn from_id(nid: &str) -> Node {
         let ndata: HashMap<String, Vec<String>> = HashMap::new();
         Node {
-            node_id: nid.to_string(),
-            node_data: ndata,
+            _id: nid.to_string(),
+            _data: ndata,
         }
     }
 }
 
-impl fmt::Display for Node {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let nid = &self.node_id;
-        write!(f, "<Node id='{}'/>", nid)
-    }
-}
-
-impl Hash for Node {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.node_id.hash(state);
-    }
-}
-
-/// Implements equality by comparing ONLY the node ID.
-///
-/// This implementation allows two nodes with the same ID to be treated as equivalent
-/// for the purposes of storage in hash collections (e.g., `HashSet` will only
-/// store one of them).
-impl PartialEq for Node {
-    fn eq(&self, other: &Self) -> bool {
-        // Equality compares ID ONLY (to satisfy hash collision requirements)
-        self.node_id == other.node_id
-    }
-}
-impl Eq for Node {}
-
 impl GraphObject for Node {
-    fn id(&self) -> &str {
-        &self.node_id
-    }
-
-    fn data(&self) -> HashMap<&str, Vec<&str>> {
-        let data = to_borrowed_data(&self.node_data);
-        data
-    }
-
     fn null() -> Node {
         let nid = String::from("");
         Node::from_id(&nid)
-    }
-
-    fn set_id(&self, idstr: &str) -> Self {
-        let mut n = Node::null();
-        n.node_id = idstr.to_string();
-        n.node_data = self.node_data.clone();
-        n
-    }
-
-    fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
-        let mut n = Node::null();
-        n.node_id = self.node_id.clone();
-        n.node_data = from_borrowed_data(&data);
-        n
     }
 }
 
@@ -157,25 +110,33 @@ mod tests {
         }
     }
 
-    impl GraphObject for DummyNode {
+    impl Identified for DummyNode {
         fn id(&self) -> &str {
             &self.id
         }
+    }
+    impl Loaded for DummyNode {
         fn data(&self) -> HashMap<&str, Vec<&str>> {
             HashMap::new()
         } // Simplification for mock
+    }
+    impl Loaded for DummyNode {
         fn null() -> Self {
             DummyNode {
                 id: "".to_string(),
                 is_mock: true,
             }
         }
+    }
+    impl IdChanger for DummyNode {
         fn set_id(&self, idstr: &str) -> Self {
             DummyNode {
                 id: idstr.to_string(),
                 is_mock: self.is_mock,
             }
         }
+    }
+    impl LoadChanger for DummyNode {
         fn set_data(&self, _: HashMap<&str, Vec<&str>>) -> Self {
             self.clone()
         }
@@ -412,8 +373,8 @@ mod tests {
     #[test]
     fn test_id() {
         let my_node = Node {
-            node_id: String::from("mnode"),
-            node_data: HashMap::new(),
+            _id: String::from("mnode"),
+            _data: HashMap::new(),
         };
         assert_eq!(my_node.id(), &String::from("mnode"));
     }
@@ -427,8 +388,8 @@ mod tests {
         ];
         my_map.insert(String::from("my"), myv);
         let my_node = Node {
-            node_id: String::from("mnode"),
-            node_data: my_map,
+            _id: String::from("mnode"),
+            _data: my_map,
         };
         let mut my_map2: HashMap<&str, Vec<&str>> = HashMap::new();
         let myv2 = vec!["awesome", "string", "stuff"];
@@ -447,8 +408,8 @@ mod tests {
         ];
         my_map.insert(String::from("my"), myv);
         let my_node = Node {
-            node_id: String::from("mnode"),
-            node_data: my_map,
+            _id: String::from("mnode"),
+            _data: my_map,
         };
         let n2 = Node::from_nodish_ref(&my_node);
         assert_eq!(my_node, n2);
@@ -463,8 +424,8 @@ mod tests {
         ];
         my_map.insert(String::from("my"), myv);
         let my_node = Node {
-            node_id: String::from("mnode"),
-            node_data: my_map,
+            _id: String::from("mnode"),
+            _data: my_map,
         };
         let n1 = my_node.clone();
         let n2 = Node::from_nodish(my_node);

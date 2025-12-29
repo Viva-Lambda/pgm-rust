@@ -5,7 +5,9 @@ use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node as NodeTrait;
-use crate::graph::types::utils::{from_borrowed_data, to_borrowed_data};
+use crate::graph::traits::utils::{from_borrowed_data, to_borrowed_data};
+
+use crate::graph::traits::generic::default_with_hash_partial_eq_impl;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
@@ -20,28 +22,16 @@ use std::hash::{Hash, Hasher};
 #[derive(Debug, Eq, PartialEq, Clone)]
 pub struct Graph<NodeType: NodeTrait, EdgeType: EdgeTrait<NodeType>> {
     /// graph identifier required for [GraphObject] trait
-    graph_id: String,
+    _id: String,
     /// graph data required for [GraphObject] trait
-    graph_data: HashMap<String, Vec<String>>,
+    _data: HashMap<String, Vec<String>>,
     /// internal representation of graph data
     /// node set contains nodes that are not connected to any edges
     /// edge set contains edges
     gdata: (HashSet<NodeType>, HashSet<EdgeType>),
 }
 
-/// Graph objects are hashed using their identifiers
-impl<T: NodeTrait, E: EdgeTrait<T>> Hash for Graph<T, E> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.graph_id.hash(state);
-        let (vs, es) = &self.gdata;
-        for v in vs {
-            v.hash(state);
-        }
-        for e in es {
-            e.hash(state);
-        }
-    }
-}
+default_with_hash_partial_eq_impl!(Graph);
 
 /// Graph objects display their identifier when serialized to string.
 impl<T: NodeTrait, E: EdgeTrait<T>> fmt::Display for Graph<T, E> {
@@ -53,41 +43,13 @@ impl<T: NodeTrait, E: EdgeTrait<T>> fmt::Display for Graph<T, E> {
 
 // Changed: Added missing Clone bound to E for GraphObject implementation
 impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphObject for Graph<T, E> {
-    // Changed: Return &str instead of &String to match trait
-    fn id(&self) -> &str {
-        &self.graph_id
-    }
-
-    // Changed: Return HashMap<&str, Vec<&str>> instead of &HashMap<String, Vec<String>>
-    fn data(&self) -> HashMap<&str, Vec<&str>> {
-        to_borrowed_data(&self.graph_data)
-    }
-
-    // Added: Missing set_id method
-    fn set_id(&self, idstr: &str) -> Self {
-        let mut g = Self::null();
-        g.graph_id = idstr.to_string();
-        g.graph_data = self.graph_data.clone();
-        g.gdata = self.gdata.clone();
-        g
-    }
-
     fn null() -> Graph<T, E> {
         let idstr = String::from("");
         Graph {
-            graph_id: idstr,
+            _id: idstr,
             gdata: (HashSet::new(), HashSet::new()),
-            graph_data: HashMap::new(),
+            _data: HashMap::new(),
         }
-    }
-
-    // Added: Missing set_data method
-    fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
-        let mut g = Self::null();
-        g.graph_id = self.graph_id.clone();
-        g.graph_data = from_borrowed_data(&data);
-        g.gdata = self.gdata.clone();
-        g
     }
 }
 
@@ -178,9 +140,9 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     ) -> Graph<T, E> {
         let (edges, mset) = get_vertices(nodes, edges);
         Graph {
-            graph_id,
+            _id,
             gdata: (mset, edges),
-            graph_data,
+            _data,
         }
     }
     /// constructor for the [Graph] object
@@ -192,24 +154,23 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     ) -> Graph<T, E> {
         let (edges, mset) = get_vertices_from_refset(nodes, edges);
         Graph {
-            graph_id,
+            _id,
             gdata: (mset, edges),
-            graph_data,
+            _data,
         }
     }
     /// empty constructor.
     /// Creates an empty graph that has no edge and vertex.
     pub fn empty(graph_id: &str) -> Graph<T, E> {
-        let mut g = Graph::null();
-        g.graph_id = graph_id.to_string();
+        let mut g = Graph::null().set_id(graph_id);
         g
     }
     /// construct [Graph] from graph like object with borrowing
     pub fn from_graphish_ref<G: GraphTrait<T, E>>(g: &G) -> Graph<T, E> {
         let (edges, mset) = get_vertices_from_refset(g.vertices(), g.edges());
         Graph {
-            graph_id: g.id().to_string(), // Changed: Use to_string() instead of clone()
-            graph_data: from_borrowed_data(&g.data()), // Changed: Convert borrowed data to owned
+            _id: g.id().to_string(), // Changed: Use to_string() instead of clone()
+            _data: from_borrowed_data(&g.data()), // Changed: Convert borrowed data to owned
             gdata: (mset, edges),
         }
     }
@@ -217,16 +178,16 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     pub fn from_graphish<G: GraphTrait<T, E>>(g: G) -> Graph<T, E> {
         let (edges, mset) = get_vertices_from_refset(g.vertices(), g.edges());
         Graph {
-            graph_id: g.id().to_string(),
-            graph_data: from_borrowed_data(&g.data()), // Changed: Convert borrowed data to owned
+            _id: g.id().to_string(),
+            _data: from_borrowed_data(&g.data()), // Changed: Convert borrowed data to owned
             gdata: (mset, edges),
         }
     }
     /// construct [Graph] from [Edge] set
     pub fn from_edgeset(edges: HashSet<E>) -> Graph<T, E> {
         Graph {
-            graph_id: Uuid::new_v4().to_string(),
-            graph_data: HashMap::new(),
+            _id: Uuid::new_v4().to_string(),
+            _data: HashMap::new(),
             gdata: (HashSet::new(), edges),
         }
     }
@@ -234,8 +195,8 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     pub fn from_edge_node_set(edges: HashSet<E>, nodes: HashSet<T>) -> Graph<T, E> {
         let (es, mset) = get_vertices(nodes, edges);
         Graph {
-            graph_id: Uuid::new_v4().to_string(),
-            graph_data: HashMap::new(),
+            _id: Uuid::new_v4().to_string(),
+            _data: HashMap::new(),
             gdata: (mset, es),
         }
     }
@@ -243,8 +204,8 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     pub fn from_edge_node_refs_set(edges: HashSet<&E>, nodes: HashSet<&T>) -> Graph<T, E> {
         let (es, mset) = get_vertices_from_refset(nodes, edges);
         Graph {
-            graph_id: Uuid::new_v4().to_string(),
-            graph_data: HashMap::new(),
+            _id: Uuid::new_v4().to_string(),
+            _data: HashMap::new(),
             gdata: (mset, es),
         }
     }
@@ -262,8 +223,8 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
         let (es, mset) = get_vertices(nodes, medges);
 
         Graph {
-            graph_id: Uuid::new_v4().to_string(),
-            graph_data: HashMap::new(),
+            _id: Uuid::new_v4().to_string(),
+            _data: HashMap::new(),
             gdata: (mset, es),
         }
     }

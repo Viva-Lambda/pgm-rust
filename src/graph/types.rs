@@ -1,9 +1,5 @@
 // graph model module declarations
 
-
-/// utils contain utility functions for [GraphObject] types
-pub mod utils;
-
 /// edge type such as directed, undirected
 pub mod edgetype;
 
@@ -17,7 +13,7 @@ pub mod node;
 pub mod graph;
 
 // path object implements [Path] trait.
-// pub mod path;
+pub mod path;
 
 // search result object
 // pub mod search;

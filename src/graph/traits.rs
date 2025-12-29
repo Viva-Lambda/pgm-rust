@@ -28,5 +28,13 @@ pub mod graph;
 /// behaviors that defines a [Path]
 pub mod path;
 
+/// utility functions behaviors
+pub mod utils;
+
+/// generic behaviors
+pub mod generic;
+
+
+
 // behaviors that define a search result
 // pub mod search;
