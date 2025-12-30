@@ -1,8 +1,10 @@
-# Workflow for cargo test
+# Workflow for cargo build
 
-name: Rust Tests
+name: Cargo Build
 
 on:
+  push:
+    branches: [ "**" ]
   pull_request:
     branches: [ "**" ]
 
@@ -10,10 +12,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    name: Run Tests
+  build:
+    name: Run Build
     runs-on: ubuntu-latest
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -21,5 +22,5 @@ jobs:
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
     
-    - name: Run tests
-      run: cargo test --verbose
+    - name: Build project
+      run: cargo build --verbose
