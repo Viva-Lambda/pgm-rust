@@ -11,15 +11,15 @@ pub trait Identified {
 }
 macro_rules! default_identified_impl {
     ($t:ty) => {
-        impl Identified for $t
-        {
-            fn id(&self) &str {
+        impl $crate::graph::traits::generic::Identified for $t {
+            fn id(&self) -> &str {
                 let id = &self._id;
-                    id
+                id
             }
         }
     };
 }
+pub(crate) use default_identified_impl;
 
 /// Promotes anything to something identifiable
 pub trait IdChanger: Identified + Clone {
@@ -29,15 +29,17 @@ pub trait IdChanger: Identified + Clone {
 
 macro_rules! default_idchanger_impl {
     ($t:ty) => {
-        impl IdChanger for $t {
+        impl $crate::graph::traits::generic::IdChanger for $t {
             fn set_id(&self, idstr: &str) -> Self {
-                let mut this = &self.clone();
+                let mut this = self.clone();
                 this._id = String::from(idstr);
                 this
             }
         }
     };
 }
+
+pub(crate) use default_idchanger_impl;
 
 /// Promotes anything to something that has data
 pub trait Loaded {
@@ -47,14 +49,15 @@ pub trait Loaded {
 
 macro_rules! default_loaded_impl {
     ($t:ty) => {
-        impl Loaded for $t {
+        impl $crate::graph::traits::generic::Loaded for $t {
             fn data(&self) -> HashMap<&str, Vec<&str>> {
-                let data = to_borrowed_data(&self._data);
+                let data = $crate::graph::traits::utils::to_borrowed_data(&self._data);
                 data
             }
         }
     };
 }
+pub(crate) use default_loaded_impl;
 
 pub trait LoadChanger: Loaded + Clone {
     /// set data, notice ref is immutable
@@ -63,15 +66,17 @@ pub trait LoadChanger: Loaded + Clone {
 
 macro_rules! default_loadchanger_impl {
     ($t:ty) => {
-        impl LoadChanger for $t {
-            fn data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
-                let mut this = &self.clone();
-                let this._data = from_borrowed_data(data);
+        impl $crate::graph::traits::generic::LoadChanger for $t {
+            fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
+                let mut this = self.clone();
+                this._data =
+                    $crate::graph::traits::utils::from_borrowed_data(&data);
                 this
             }
         }
     };
 }
+pub(crate) use default_loadchanger_impl;
 
 /// Promotes anything to something that has a name
 pub trait Named {
@@ -81,19 +86,20 @@ pub trait Named {
 
 macro_rules! default_named_impl {
     ($t:ty) => {
-        impl Named for $t {
+        impl $crate::graph::traits::generic::Named for $t {
             fn name(&self) -> String {
                 stringify!($t).to_string()
             }
         }
     };
 }
+pub(crate) use default_named_impl;
 
 macro_rules! default_display_identified_impl {
     ($t:ty) => {
-        impl fmt::Display for T
+        impl fmt::Display for $t
         where
-            $t: Identified + Named,
+            $t: $crate::graph::traits::generic::Identified + $crate::graph::traits::generic::Named,
         {
             // add code here
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -104,8 +110,9 @@ macro_rules! default_display_identified_impl {
         }
     };
 }
+pub(crate) use default_display_identified_impl;
 
-fn render_hashmap(data: &HashMap<&str, Vec<&str>>) -> String {
+pub fn render_hashmap(data: &HashMap<&str, Vec<&str>>) -> String {
     let mut result = String::from("<data>\n");
     for (k, vs) in data.iter() {
         let mut kdata = String::from("<");
@@ -128,42 +135,46 @@ fn render_hashmap(data: &HashMap<&str, Vec<&str>>) -> String {
 
 macro_rules! default_display_load_impl {
     ($t:ty) => {
-        impl fmt::Display for T
+        impl fmt::Display for $t
         where
-            $t: Loaded,
+            $t: $crate::graph::traits::generic::Loaded,
         {
             // add code here
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 let data = &self.data();
-                let result = render_hashmap(&data);
+                let result = $crate::graph::traits::generic::render_hashmap(&data);
                 write!(f, "'{}'", &result)
             }
         }
     };
 }
+pub(crate) use default_display_load_impl;
 
 macro_rules! default_display_with_data_impl {
     ($t:ty) => {
-        impl fmt::Display for T
+        impl fmt::Display for $t
         where
-            $t: Identified + Named + Loaded,
+            $t: $crate::graph::traits::generic::Identified
+                + $crate::graph::traits::generic::Named
+                + $crate::graph::traits::generic::Loaded,
         {
             // add code here
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 let id = &self.id();
                 let name = &self.name();
-                let data_result = render_hashmap(&self.data());
-                write!(f, "<{} id='{}'>\n{}\n</{}>", name, id, data_result, name);
+                let data_result = $crate::graph::traits::generic::render_hashmap(&self.data());
+                write!(f, "<{} id='{}'>\n{}\n</{}>", name, id, data_result, name)
             }
         }
     };
 }
+pub(crate) use default_display_with_data_impl;
 
 macro_rules! default_hash_id_impl {
     ($t:ty) => {
         impl Hash for $t
         where
-            $t: Identified,
+            $t: $crate::graph::traits::generic::Identified,
         {
             fn hash<H: Hasher>(&self, state: &mut H) {
                 let id = self.id();
@@ -172,12 +183,13 @@ macro_rules! default_hash_id_impl {
         }
     };
 }
+pub(crate) use default_hash_id_impl;
 
 macro_rules! default_partial_eq_impl {
     ($t:ty) => {
         impl PartialEq for $t
         where
-            $t: Identified,
+            $t: $crate::graph::traits::generic::Identified,
         {
             fn eq(&self, other: &Self) -> bool {
                 // Equality compares ID ONLY (to satisfy hash collision requirements)
@@ -185,9 +197,10 @@ macro_rules! default_partial_eq_impl {
             }
         }
 
-        impl Eq for $t where $t: Identified {}
+        impl Eq for $t where $t: $crate::graph::traits::generic::Identified {}
     };
 }
+pub(crate) use default_partial_eq_impl;
 
 macro_rules! default_getter_impl {
     ($my_type:ty) => {
@@ -196,6 +209,7 @@ macro_rules! default_getter_impl {
         default_loaded_impl!($my_type);
     };
 }
+pub(crate) use default_getter_impl;
 
 macro_rules! default_setter_impl {
     ($my_type:ty) => {
@@ -203,8 +217,8 @@ macro_rules! default_setter_impl {
         default_loadchanger_impl!($my_type);
     };
 }
+pub(crate) use default_setter_impl;
 
-pub(crate) use default_all_impl;
 macro_rules! default_all_impl {
     ($my_type:ty) => {
         default_getter_impl!($my_type);
@@ -215,7 +229,7 @@ macro_rules! default_all_impl {
     };
 }
 
-pub(crate) use default_with_display_impl;
+pub(crate) use default_all_impl;
 macro_rules! default_with_display_impl {
     ($my_type:ty) => {
         default_getter_impl!($my_type);
@@ -223,8 +237,8 @@ macro_rules! default_with_display_impl {
         default_display_with_data_impl!($my_type);
     };
 }
+pub(crate) use default_with_display_impl;
 
-pub(crate) use default_with_id_display_impl;
 macro_rules! default_with_id_display_impl {
     ($my_type:ty) => {
         default_getter_impl!($my_type);
@@ -232,8 +246,8 @@ macro_rules! default_with_id_display_impl {
         default_display_identified_impl!($my_type);
     };
 }
+pub(crate) use default_with_id_display_impl;
 
-pub(crate) use default_with_hash_partial_eq_impl;
 macro_rules! default_with_hash_partial_eq_impl {
     ($my_type:ty) => {
         default_getter_impl!($my_type);
@@ -242,3 +256,4 @@ macro_rules! default_with_hash_partial_eq_impl {
         default_partial_eq_impl!($my_type);
     };
 }
+pub(crate) use default_with_hash_partial_eq_impl;

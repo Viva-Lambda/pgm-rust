@@ -4,16 +4,16 @@
 pub mod edgetype;
 
 /// edge object implements [GraphObject] trait.
-pub mod edge;
+// pub mod edge;
 
 /// node object implements [GraphObject] trait.
 pub mod node;
 
 // graph object implements [GraphObject] trait.
-pub mod graph;
+//pub mod graph;
 
 // path object implements [Path] trait.
-pub mod path;
+// pub mod path;
 
 // search result object
 // pub mod search;

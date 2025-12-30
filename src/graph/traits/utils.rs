@@ -21,7 +21,7 @@ use std::collections::HashMap;
 ///
 /// ```
 /// use std::collections::HashMap;
-/// use pgm_rust::graph::types::utils::from_borrowed_data;
+/// use pgm_rust::graph::traits::utils::from_borrowed_data;
 /// // Assume from_borrowed_data is available in the current scope
 /// let borrowed_map: HashMap<&str, Vec<&str>> = HashMap::from([
 ///     ("key1", vec!["a", "b"]),
@@ -68,7 +68,7 @@ pub fn from_borrowed_data(hmap: &HashMap<&str, Vec<&str>>) -> HashMap<String, Ve
 ///
 /// ```
 /// use std::collections::HashMap;
-/// use pgm_rust::graph::types::utils::to_borrowed_data;
+/// use pgm_rust::graph::traits::utils::to_borrowed_data;
 /// // Assume to_borrowed_data is available in the current scope
 /// let owned_map: HashMap<String, Vec<String>> = HashMap::from([
 ///     ("key1".to_string(), vec!["a".to_string(), "b".to_string()]),

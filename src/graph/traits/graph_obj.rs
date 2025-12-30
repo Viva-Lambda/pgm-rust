@@ -8,7 +8,9 @@ use std::hash::Hash;
 
 /// Promotes anything that is hashable and converted to string to a [GraphObject]
 /// This is almost exchangeable with being a [Node]
-pub trait GraphObject: Named + Loaded + Identified + LoadChanger + IdChanger {
+pub trait GraphObject:
+    Named + Loaded + Identified + LoadChanger + IdChanger + Hash + PartialEq + Eq
+{
     /// null constructor
     fn null() -> Self;
 }
