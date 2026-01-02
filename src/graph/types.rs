@@ -13,7 +13,7 @@ pub mod node;
 pub mod graph;
 
 // path object implements [Path] trait.
-// pub mod path;
+pub mod path;
 
 // search result object
 // pub mod search;

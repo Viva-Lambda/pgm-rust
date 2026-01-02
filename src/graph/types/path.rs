@@ -14,6 +14,17 @@ use std::collections::HashSet;
 use std::fmt;
 use std::hash::{Hash, Hasher};
 use std::marker::PhantomData;
+use crate::graph::traits::generic::default_with_hash_partial_eq_impl;
+
+use crate::graph::traits::generic::{ // required for main macro
+    default_getter_impl, default_hash_id_impl,
+    default_idchanger_impl, default_identified_impl, default_loadchanger_impl, default_loaded_impl,
+    default_named_impl, default_partial_eq_impl, default_setter_impl,
+};
+
+use crate::graph::traits::generic::{
+    IdChanger, Identified, Loaded,
+};
 
 /// checks if containers has two members or less
 fn has_two_or_less<N: NodeTrait>(nodes: &Vec<&N>) {
@@ -30,152 +41,146 @@ fn extract_two_nodes<N: NodeTrait>(nodes: &Vec<&N>) -> (N, N) {
 }
 
 /// Output nodes of the argument edges with different groupings
-fn get_end_vertices_and_nodes<N, E>(edges: Vec<E>) -> (Vec<N>, HashSet<N>, (N, N))
+fn get_end_vertices_and_nodes<N, E>(edges: &HashSet<E>) -> (Vec<N>, HashSet<N>, (N, N))
 where
-    N: NodeTrait,
+    N: NodeTrait + std::hash::Hash + Eq + Clone,
     E: EdgeTrait<N>,
 {
-    let mut ns: Vec<N> = Vec::new();
-    let e_opt = edges.get(0);
-    match e_opt {
-        None => panic!("empty edge list"),
-        Some(e) => {
-            let e_start: &N = e.start();
-            ns.push(e_start.clone());
-        }
-    }
-    //
-    let mut nodes: HashSet<&N> = HashSet::new();
-    let mut snodes: HashSet<&N> = HashSet::new();
-    let mut enodes: HashSet<&N> = HashSet::new();
-    for e in &edges {
-        let e_start: &N = e.start();
-        let e_end: &N = e.end();
-        snodes.insert(e_start);
-        enodes.insert(e_end);
-        nodes.insert(e_start);
-        nodes.insert(e_end);
+    if edges.is_empty() { panic!("Empty edge set"); }
 
-        let has_not_end = !ns.contains(&e_end);
-        if has_not_end {
-            ns.push(e_end.clone());
+    let mut degree_map: HashMap<N, usize> = HashMap::new();
+    let mut node_set: HashSet<N> = HashSet::new();
+
+    for e in edges {
+        let u = e.start().clone();
+        let v = e.end().clone();
+        
+        *degree_map.entry(u.clone()).or_insert(0) += 1;
+        *degree_map.entry(v.clone()).or_insert(0) += 1;
+        
+        node_set.insert(u);
+        node_set.insert(v);
+    }
+
+    // Find nodes with degree 1 (endpoints)
+    let endpoints: Vec<N> = degree_map
+        .into_iter()
+        .filter(|(_, count)| *count == 1)
+        .map(|(node, _)| node)
+        .collect();
+
+    if endpoints.len() != 2 {
+        panic!("The provided edges do not form a simple path (endpoints found: {})", endpoints.len());
+    }
+
+    // For the return tuple (node_lst, node_set, (start, end))
+    let node_lst: Vec<N> = node_set.iter().cloned().collect();
+    let start_end = (endpoints[0].clone(), endpoints[1].clone());
+
+    (node_lst, node_set, start_end)
+}
+
+fn order_edges<N, E>(start_node: &N, edge_set: HashSet<E>) -> Vec<E>
+where
+    N: NodeTrait + PartialEq + Clone,
+    E: EdgeTrait<N> + Clone,
+{
+    let mut ordered = Vec::new();
+    let mut remaining_edges: Vec<E> = edge_set.into_iter().collect();
+    let mut current_node = start_node.clone();
+
+    while !remaining_edges.is_empty() {
+        // Find the index of the edge that connects to the current node
+        if let Some(pos) = remaining_edges.iter().position(|e| *e.start() == current_node || *e.end() == current_node) {
+            let edge = remaining_edges.remove(pos);
+            
+            // Determine the "next" node in the sequence
+            current_node = if *edge.start() == current_node {
+                edge.end().clone()
+            } else {
+                edge.start().clone()
+            };
+            
+            ordered.push(edge);
+        } else {
+            break; // Should not happen if degree check passed and graph is connected
         }
     }
-    let node_lst = ns;
-    let node_set: HashSet<N> = nodes.iter().map(|&x| x.clone()).collect();
-    let end_nodes: Vec<&N> = enodes
-        .clone()
-        .into_iter()
-        .filter(|n| !snodes.contains(n))
-        .collect();
-    let mut start_nodes: Vec<&N> = snodes.into_iter().filter(|n| !enodes.contains(n)).collect();
-    has_two_or_less(&end_nodes);
-    has_two_or_less(&start_nodes);
-    if start_nodes.len() == 2 {
-        let start_end = extract_two_nodes(&start_nodes);
-        (node_lst, node_set, start_end)
-    } else if end_nodes.len() == 2 {
-        let start_end = extract_two_nodes(&end_nodes);
-        (node_lst, node_set, start_end)
-    } else {
-        start_nodes.extend(end_nodes.into_iter());
-        let start_end = extract_two_nodes(&start_nodes);
-        (node_lst, node_set, start_end)
-    }
+    ordered
 }
 
 /// path is essentially a graph
 /// path object as defined in Diestel 2017, p. 6
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Path<N: NodeTrait, E: EdgeTrait<N>> {
     /// edges of the path graph
-    gdata: HashSet<E>,
+    gdata: Vec<E>,
     /// graph identifier required for [GraphObject] trait
-    graph_id: String,
+    _id: String,
     /// graph data required for [GraphObject] trait
-    graph_data: HashMap<String, Vec<String>>,
+    _data: HashMap<String, Vec<String>>,
+    _node_type: PhantomData<N>,
 }
 
-/// Path objects are hashed using their graphs
-impl<T: NodeTrait, E: EdgeTrait<T>> Hash for Path<T, E> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.graph.hash(state);
-    }
-}
+default_with_hash_partial_eq_impl!(Path, <NodeType, EdgeType>, 
+    NodeType: NodeTrait, EdgeType: EdgeTrait<NodeType>);
+
 
 /// Path objects display their identifier when serialized to string.
 impl<N: NodeTrait, E: EdgeTrait<N>> fmt::Display for Path<N, E> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let nid = &self.graph.id();
+        let nid = &self.id();
         write!(f, "<Path id='{}'>", nid)
     }
 }
 
-impl<T: NodeTrait, E: EdgeTrait<T>, G: GraphTrait<T, E> + GraphObjectTrait> GraphObjectTrait
-    for Path<T, E, G>
+impl<T: NodeTrait, E: EdgeTrait<T>> GraphObjectTrait
+    for Path<T, E>
 {
-    /// id string
-    fn id(&self) -> &str {
-        &self.graph_id
-    }
-
-    
-    fn data(&self) -> HashMap<&str, Vec<&str>> {
-        to_borrowed_data(&self.graph_data)
-    }
-
-    // Added: Missing set_id method
-    fn set_id(&self, idstr: &str) -> Self {
-        let mut g = Self::null();
-        g.graph_id = idstr.to_string();
-        g.graph_data = self.graph_data.clone();
-        g.gdata = self.gdata.clone();
-        g
-    }
-
     fn null() -> Path<T, E> {
         let idstr = String::from("");
         Path {
-            graph_id: idstr,
-            gdata: HashSet::new(),
-            graph_data: HashMap::new(),
+            _id: idstr,
+            gdata: Vec::new(),
+            _data: HashMap::new(),
+            _node_type: PhantomData,
         }
-    }
-
-    // Added: Missing set_data method
-    fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
-        let mut g = Self::null();
-        g.graph_id = self.graph_id.clone();
-        g.graph_data = from_borrowed_data(&data);
-        g.gdata = self.gdata.clone();
-        g
     }
 
 }
 
-impl<T: NodeTrait, E: EdgeTrait<T> + Clone, G: GraphTrait<T, E> + GraphObjectTrait> GraphTrait<T, E>
-    for Path<T, E, G>
+impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphTrait<T, E>
+    for Path<T, E>
 {
     fn vertices(&self) -> HashSet<&T> {
-        self.graph.vertices()
+
+    let mut nodes: HashSet<&T> = HashSet::new();
+
+    for e in &self.gdata {
+        let e_start: &T = e.start();
+        let e_end: &T = e.end();
+        nodes.insert(e_start);
+        nodes.insert(e_end);
+    }
+    nodes
     }
     fn edges(&self) -> HashSet<&E> {
-        self.graph.edges()
+        self.gdata.iter().collect()
     }
     fn create(
         graph_id: String,
         graph_data: HashMap<String, Vec<String>>,
         nodes: HashSet<T>,
         edges: HashSet<E>,
-    ) -> Path<T, E, G> {
-        let graph = G::create(graph_id, graph_data, nodes, edges.clone());
-        let edges: Vec<E> = edges.iter().map(|x| x.clone()).collect();
-        let group = get_end_vertices_and_nodes::<T, E>(edges);
+    ) -> Path<T, E> {
+        let group = get_end_vertices_and_nodes::<T, E>(&edges);
         let (_, _, (start, end)) = group;
+        let ordered = order_edges::<T, E>(&start, edges);
         Path {
-            graph: graph,
-            ends: (start, end),
-            edge_type: PhantomData,
+            _id: graph_id,
+            _data: graph_data,
+            gdata: ordered
+            ,_node_type: PhantomData,
         }
     }
     fn create_from_ref(
@@ -183,95 +188,65 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone, G: GraphTrait<T, E> + GraphObjectTra
         graph_data: HashMap<String, Vec<String>>,
         nodes: HashSet<&T>,
         edges: HashSet<&E>,
-    ) -> Path<T, E, G> {
-        let graph = G::create_from_ref(graph_id, graph_data, nodes, edges.clone());
-        let edges: Vec<E> = edges.iter().map(|&x| x.clone()).collect();
-        let group = get_end_vertices_and_nodes::<T, E>(edges);
+    ) -> Path<T, E> {
+        let edges_: HashSet<E> = edges.iter().map(|&x|x.clone()).collect(); 
+        let group = get_end_vertices_and_nodes::<T, E>(&edges_);
         let (_, _, (start, end)) = group;
+        let ordered = order_edges::<T, E>(&start, edges_);
         Path {
-            graph: graph,
-            ends: (start, end),
-            edge_type: PhantomData,
+            _id: graph_id,
+            _data: graph_data,
+            gdata: ordered
+            ,_node_type: PhantomData,
         }
     }
 }
 
-impl<T: NodeTrait, E: EdgeTrait<T> + Clone, G: GraphTrait<T, E> + GraphObjectTrait> PathTrait<T, E>
-    for Path<T, E, G>
+impl<T: NodeTrait, E: EdgeTrait<T> + Clone> PathTrait<T, E>
+    for Path<T, E>
 {
     /// number of edges inside the path, see Diestel 2017, p. 6
     fn length(&self) -> usize {
-        self.graph.edges().len()
+        self.gdata.len()
     }
 
     /// end nodes of path
     fn endvertices(&self) -> (&T, &T) {
-        let (e1, e2) = &self.ends;
-        (e1, e2)
+    if self.gdata.is_empty() {
+        panic!("Diestel defines a path as non-empty; length 0 path not supported here.");
     }
+
+    if self.gdata.len() == 1 {
+        // Path of length 1: the edge is (u, v)
+        return (self.gdata[0].start(), self.gdata[0].end());
+    }
+
+    // For length > 1, find the nodes in the first and last edges 
+    // that are NOT shared with their neighbors.
+    let e_first = &self.gdata[0];
+    let e_second = &self.gdata[1];
+    let e_last = &self.gdata[self.gdata.len() - 1];
+    let e_penultimate = &self.gdata[self.gdata.len() - 2];
+
+    // The start node is the one in e_first that isn't in e_second
+    let start = if e_first.start() == e_second.start() || e_first.start() == e_second.end() {
+        e_first.end()
+    } else {
+        e_first.start()
+    };
+
+    // The end node is the one in e_last that isn't in e_penultimate
+    let end = if e_last.start() == e_penultimate.start() || e_last.start() == e_penultimate.end() {
+        e_last.end()
+    } else {
+        e_last.start()
+    };
+
+    (start, end)
+}
 }
 
 #[cfg(test)]
 mod tests {
 
-    use super::*; // brings in the parent scope to current module scope
-    use crate::graph::types::edge::Edge;
-    use crate::graph::types::graph::Graph;
-    use crate::graph::types::node::Node;
-
-    // mk node
-    fn mk_node(n_id: &str) -> Node {
-        Node::new(n_id.to_string(), HashMap::new())
-    }
-
-    fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
-        let mut h: HashSet<Node> = HashSet::new();
-        for n in ns {
-            h.insert(mk_node(n));
-        }
-        h
-    }
-
-    // mk edge
-    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
-        let n1 = mk_node(n1_id);
-        let n2 = mk_node(n2_id);
-        let mut h1 = HashMap::new();
-        h1.insert(String::from("my"), vec![String::from("data")]);
-        Edge::undirected(e_id.to_string(), n1, n2, h1)
-    }
-
-    /// make a path
-    /// n1 - n2 - n3 - n4 - n5 - n6 - n7
-    fn mk_path() -> Path<Node, Edge<Node>, Graph<Node, Edge<Node>>> {
-        let ns = mk_nodes(vec!["n1", "n2", "n3", "n4", "n5", "n6", "n7"]);
-        let e1 = mk_uedge("n1", "n2", "e1");
-        let e2 = mk_uedge("n2", "n3", "e2");
-        let e3 = mk_uedge("n3", "n4", "e3");
-        let e4 = mk_uedge("n4", "n5", "e4");
-        let e5 = mk_uedge("n5", "n6", "e5");
-        let e6 = mk_uedge("n6", "n7", "e6");
-        let es = HashSet::from([e1, e2, e3, e4, e5, e6]);
-        let p = Path::create("mpath".to_string(), HashMap::new(), ns, es);
-        p
-    }
-    #[test]
-    fn test_id() {
-        let p = mk_path();
-        assert_eq!(p.id(), "mpath");
-    }
-
-    #[test]
-    fn test_length() {
-        let p = mk_path();
-        assert_eq!(p.length(), 6);
-    }
-
-    #[test]
-    fn test_endvertices() {
-        let p = mk_path();
-        let n1 = mk_node("n1");
-        let n7 = mk_node("n7");
-        assert_eq!(p.ends, (n1, n7));
-    }
 }

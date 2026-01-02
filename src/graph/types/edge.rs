@@ -42,7 +42,7 @@ default_with_hash_partial_eq_impl!(Edge, <T>, T: NodeTrait + Identified);
 pub struct Edges<N: NodeTrait, E: EdgeTrait<N>> {
     /// edge set content
     pub edge_set: HashSet<E>,
-    node_type: PhantomData<N>,
+    _node_type: PhantomData<N>,
 }
 
 impl<N: NodeTrait, E: EdgeTrait<N> + Clone> EdgeSetTrait<N, E> for Edges<N, E> {
@@ -60,7 +60,7 @@ impl<N: NodeTrait, E: EdgeTrait<N> + Clone> EdgeSetTrait<N, E> for Edges<N, E> {
         }
         Edges {
             edge_set: es,
-            node_type: PhantomData,
+            _node_type: PhantomData,
         }
     }
 }
