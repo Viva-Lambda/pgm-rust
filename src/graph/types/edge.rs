@@ -2,14 +2,16 @@
 
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::edge::EdgeSet as EdgeSetTrait;
-use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::generic::{
     default_display_with_data_impl, default_getter_impl, default_hash_id_impl,
     default_idchanger_impl, default_identified_impl, default_loadchanger_impl, default_loaded_impl,
     default_named_impl, default_partial_eq_impl, default_setter_impl,
 };
+use crate::graph::traits::graph_obj::GraphObject;
 
-use crate::graph::traits::generic::{IdChanger, Identified, LoadChanger, Loaded, Named};
+use crate::graph::traits::generic::{
+    render_hashmap, IdChanger, Identified, LoadChanger, Loaded, Named,
+};
 
 use crate::graph::traits::generic::default_with_hash_partial_eq_impl;
 use crate::graph::traits::node::Node as NodeTrait;
@@ -33,7 +35,7 @@ pub struct Edge<T: NodeTrait> {
     end_node: T,
 }
 
-default_with_hash_partial_eq_impl!(Edge<T>, T: NodeTrait);
+default_with_hash_partial_eq_impl!(Edge, <T>, T: NodeTrait + Identified);
 
 /// short hand for edge set
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -65,14 +67,15 @@ impl<N: NodeTrait, E: EdgeTrait<N> + Clone> EdgeSetTrait<N, E> for Edges<N, E> {
 
 impl<T: NodeTrait> fmt::Display for Edge<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let eid = &self.info.id;
-        let n1 = &self.start_node;
-        let n2 = &self.end_node;
-        let et = &self.info.edge_type;
+        let n1 = &self.start().to_string();
+        let n2 = &self.end().to_string();
+        let et = &self.edge_type.to_string();
+        let id_s = &self.id().to_string();
+        let data_s = render_hashmap(&self.data());
         write!(
             f,
-            "<Edge id='{}' type='{}'><start>{}</start><end>{}</end></Edge>",
-            eid, et, n1, n2
+            "<Edge id='{}' type='{}'>\n<start>{}</start>\n<end>{}</end>\n{}</Edge>",
+            id_s, et, n1, n2, data_s
         )
     }
 }
@@ -81,35 +84,13 @@ impl<T: NodeTrait> GraphObject for Edge<T> {
     fn null() -> Edge<T> {
         let s = T::null();
         let e = T::null();
-        let info = EdgeInfo::null();
         Edge {
-            _id: String::from_str(""),
+            _id: String::from(""),
             _data: HashMap::new(),
             edge_type: EdgeType::Undirected,
             start_node: s,
             end_node: e,
         }
-    }
-}
-
-impl<NodeType: NodeTrait> EdgeTrait<NodeType> for Edge<NodeType> {
-    fn start(&self) -> &NodeType {
-        &self.start_node
-    }
-    fn end(&self) -> &NodeType {
-        &self.end_node
-    }
-    fn has_type(&self) -> &EdgeType {
-        &self.info.edge_type
-    }
-    fn create(
-        eid: String,
-        e_data: HashMap<String, Vec<String>>,
-        snode: NodeType,
-        enode: NodeType,
-        etype: EdgeType,
-    ) -> Edge<NodeType> {
-        Edge::from_info(eid, e_data, etype, snode, enode)
     }
 }
 
@@ -176,6 +157,27 @@ impl<T: NodeTrait> Edge<T> {
         let end_n = T::null().set_id(end_id);
         e.end_node = end_n;
         e
+    }
+}
+
+impl<NodeType: NodeTrait> EdgeTrait<NodeType> for Edge<NodeType> {
+    fn start(&self) -> &NodeType {
+        &self.start_node
+    }
+    fn end(&self) -> &NodeType {
+        &self.end_node
+    }
+    fn has_type(&self) -> &EdgeType {
+        &self.edge_type
+    }
+    fn create(
+        eid: String,
+        e_data: HashMap<String, Vec<String>>,
+        snode: NodeType,
+        enode: NodeType,
+        etype: EdgeType,
+    ) -> Edge<NodeType> {
+        Edge::new(eid, e_data, etype, snode, enode)
     }
 }
 #[cfg(test)]

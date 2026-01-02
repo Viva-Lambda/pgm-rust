@@ -39,7 +39,7 @@ pub trait IdChanger: Identified + Clone {
 
 macro_rules! default_idchanger_impl {
     //
-    ($t:ident,<$($params:ident),+>, $($gen:tt)*) => {
+    ($t:ident, <$($params:ident),+>, $($gen:tt)*) => {
         impl<$($gen)*> $crate::graph::traits::generic::IdChanger for
             $t<$($params),+> {
             fn set_id(&self, idstr: &str) -> Self {
@@ -49,6 +49,7 @@ macro_rules! default_idchanger_impl {
             }
         }
     };
+
     // simple type
     ($t:ty) => {
         impl $crate::graph::traits::generic::IdChanger for $t {
@@ -72,7 +73,7 @@ pub trait Loaded {
 macro_rules! default_loaded_impl {
 
     // generic type
-    ($t:ty, <$($params:ident),+>, $($gen:tt)*) => {
+    ($t:ident, <$($params:ident),+>, $($gen:tt)*) => {
         impl<$($gen)*> $crate::graph::traits::generic::Loaded for $t<$($params),+> {
             fn data(&self) -> HashMap<&str, Vec<&str>> {
                 let data = $crate::graph::traits::utils::to_borrowed_data(&self._data);
@@ -101,8 +102,8 @@ pub trait LoadChanger: Loaded + Clone {
 macro_rules! default_loadchanger_impl {
 
     // generic type
-    ($t:ty, $($gen:tt)+) => {
-        impl<$($gen)+> $crate::graph::traits::generic::LoadChanger for $t {
+    ($name:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        impl<$($gen)*> $crate::graph::traits::generic::LoadChanger for $name<$($params),+> {
             fn set_data(&self, data: HashMap<&str, Vec<&str>>) -> Self {
                 let mut this = self.clone();
                 this._data = $crate::graph::traits::utils::from_borrowed_data(&data);
@@ -132,8 +133,8 @@ pub trait Named {
 macro_rules! default_named_impl {
 
     // generic type
-    ($t:ty, $($gen:tt)+) => {
-        impl<$($gen)+> $crate::graph::traits::generic::Named for $t {
+    ($name:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        impl<$($gen)*> $crate::graph::traits::generic::Named for $name<$($params),+> {
             fn name(&self) -> String {
                 stringify!($t).to_string()
             }
@@ -154,10 +155,8 @@ pub(crate) use default_named_impl;
 macro_rules! default_display_identified_impl {
 
     // generic type
-    ($t:ty, $($gen:tt)+) => {
-        impl<$($gen)+> fmt::Display for $t
-        where
-            $t: $crate::graph::traits::generic::Identified + $crate::graph::traits::generic::Named,
+    ($name:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        impl<$($gen)*> fmt::Display for $name<$($params),+>
         {
             // add code here
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -207,10 +206,8 @@ pub fn render_hashmap(data: &HashMap<&str, Vec<&str>>) -> String {
 
 macro_rules! default_display_load_impl {
 
-    ($t:ty, $($gen:tt)+) => {
-        impl<$($gen)+> fmt::Display for $t
-        where
-            $t: $crate::graph::traits::generic::Loaded,
+    ($name:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        impl<$($gen)*> fmt::Display for $name<$($params),+>
         {
             // add code here
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -239,6 +236,21 @@ macro_rules! default_display_load_impl {
 pub(crate) use default_display_load_impl;
 
 macro_rules! default_display_with_data_impl {
+// generic types
+    // Usage: (StructName, <T, E>, T: Trait, E: Trait)
+    ($name:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        impl<$($gen)*> fmt::Display for $name<$($params),+>
+        {
+            // add code here
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                let id = &self.id();
+                let name = &self.name();
+                let data_result = $crate::graph::traits::generic::render_hashmap(&self.data());
+                write!(f, "<{} id='{}'>\n{}\n</{}>", name, id, data_result, name)
+            }
+        }
+    };
+
     ($t:ty) => {
         impl fmt::Display for $t
         where
@@ -259,10 +271,8 @@ macro_rules! default_display_with_data_impl {
 pub(crate) use default_display_with_data_impl;
 
 macro_rules! default_hash_id_impl {
-    ($t:ty, $($gen:tt)+) => {
-    impl<$($gen)+> std::hash::Hash for $t
-        where
-            $t: $crate::graph::traits::generic::Identified,
+    ($name:ident, <$($params:ident),+>, $($gen:tt)*) => {
+    impl<$($gen)*> std::hash::Hash for $name<$($params),+>
         {
             fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
                 let id = self.id();
@@ -287,10 +297,8 @@ pub(crate) use default_hash_id_impl;
 
 macro_rules! default_partial_eq_impl {
 
-    ($t:ty, $($gen:tt)+) => {
-    impl<$($gen)+> PartialEq for $t
-        where
-            $t: $crate::graph::traits::generic::Identified,
+    ($name:ident, <$($params:ident),+>, $($gen:tt)*) => {
+    impl<$($gen)*> PartialEq for $name<$($params),+>
         {
             fn eq(&self, other: &Self) -> bool {
                 // Equality compares ID ONLY (to satisfy hash collision requirements)
@@ -298,7 +306,7 @@ macro_rules! default_partial_eq_impl {
             }
         }
 
-        impl Eq for $t where $t: $crate::graph::traits::generic::Identified {}
+        impl<$($gen)*> Eq for $name<$($params),+> {}
     };
 
     ($t:ty) => {
@@ -319,10 +327,10 @@ pub(crate) use default_partial_eq_impl;
 
 macro_rules! default_getter_impl {
 
-    ($my_type:ident, $gen_name:ident: $bound:path) => {
-        default_named_impl!($my_type, $gen_name: $bound);
-        default_identified_impl!($my_type, $($gen)+);
-        default_loaded_impl!($my_type, $($gen)+);
+    ($my_type:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        default_named_impl!($my_type, <$($params),+>, $($gen)*);
+        default_identified_impl!($my_type,<$($params),+>, $($gen)*);
+        default_loaded_impl!($my_type, <$($params),+>, $($gen)*);
     };
 
     ($my_type:ty) => {
@@ -335,10 +343,11 @@ pub(crate) use default_getter_impl;
 
 macro_rules! default_setter_impl {
 
-    ($my_type:ty, $($gen:tt)+) => {
-        default_idchanger_impl!($my_type, $($gen)+);
-        default_loadchanger_impl!($my_type, $($gen)+);
+    ($my_type:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        default_idchanger_impl!($my_type, <$($params),+>, $($gen)*);
+        default_loadchanger_impl!($my_type,  <$($params),+>, $($gen)*);
     };
+
     ($my_type:ty) => {
         default_idchanger_impl!($my_type);
         default_loadchanger_impl!($my_type);
@@ -347,13 +356,12 @@ macro_rules! default_setter_impl {
 pub(crate) use default_setter_impl;
 
 macro_rules! default_all_impl {
-    ($my_type:ty, $($gen:tt)+) => {
-        default_getter_impl!($my_type, $($gen)+);
-        default_setter_impl!($my_type, $($gen)+);
-        default_display_with_data_impl!($my_type, $($gen)+);
-        default_hash_id_impl!($my_type, $($gen)+);
-        default_partial_eq_impl!($my_type, $($gen)+);
-
+    ($my_type:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        default_getter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_setter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_display_with_data_impl!($my_type, <$($params),+>, $($gen)*);
+        default_hash_id_impl!($my_type, <$($params),+>, $($gen)*);
+        default_partial_eq_impl!($my_type, <$($params),+>, $($gen)*);
     };
     ($my_type:ty) => {
         default_getter_impl!($my_type);
@@ -367,10 +375,10 @@ macro_rules! default_all_impl {
 pub(crate) use default_all_impl;
 macro_rules! default_with_display_impl {
 
-    ($my_type:ty, $($gen:tt)+) => {
-        default_getter_impl!($my_type, $($gen)+);
-        default_setter_impl!($my_type, $($gen)+);
-        default_display_with_data_impl!($my_type, $($gen)+);
+    ($my_type:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        default_getter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_setter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_display_with_data_impl!($my_type, <$($params),+>, $($gen)*);
     };
     ($my_type:ty) => {
         default_getter_impl!($my_type);
@@ -381,10 +389,10 @@ macro_rules! default_with_display_impl {
 pub(crate) use default_with_display_impl;
 
 macro_rules! default_with_id_display_impl {
-    ($my_type:ty, $($gen:tt)+) => {
-        default_getter_impl!($my_type, $($gen)+);
-        default_setter_impl!($my_type, $($gen)+);
-        default_display_identified_impl!($my_type, $($gen)+);
+    ($my_type:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        default_getter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_setter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_display_identified_impl!($my_type, <$($params),+>, $($gen)*);
     };
     ($my_type:ty) => {
         default_getter_impl!($my_type);
@@ -395,11 +403,11 @@ macro_rules! default_with_id_display_impl {
 pub(crate) use default_with_id_display_impl;
 
 macro_rules! default_with_hash_partial_eq_impl {
-    ($my_type:ty, $($gen:tt)+) => {
-        default_getter_impl!($my_type, $($gen)+);
-        default_setter_impl!($my_type, $($gen)+);
-        default_hash_id_impl!($my_type, $($gen)+);
-        default_partial_eq_impl!($my_type, $($gen)+);
+    ($my_type:ident, <$($params:ident),+>, $($gen:tt)*) => {
+        default_getter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_setter_impl!($my_type, <$($params),+>, $($gen)*);
+        default_hash_id_impl!($my_type, <$($params),+>, $($gen)*);
+        default_partial_eq_impl!($my_type, <$($params),+>, $($gen)*);
     };
 
     ($my_type:ty) => {
