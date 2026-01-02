@@ -9,14 +9,14 @@ use crate::graph::traits::utils::{from_borrowed_data, to_borrowed_data};
 
 use crate::graph::traits::generic::default_with_hash_partial_eq_impl;
 
-use crate::graph::traits::generic::{
-    default_display_with_data_impl, default_getter_impl, default_hash_id_impl,
+use crate::graph::traits::generic::{ // required for main macro
+    default_getter_impl, default_hash_id_impl,
     default_idchanger_impl, default_identified_impl, default_loadchanger_impl, default_loaded_impl,
     default_named_impl, default_partial_eq_impl, default_setter_impl,
 };
 
 use crate::graph::traits::generic::{
-    render_hashmap, IdChanger, Identified, LoadChanger, Loaded, Named,
+    IdChanger, Identified, Loaded,
 };
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -24,7 +24,6 @@ use std::fmt;
 
 use uuid::Uuid;
 
-use std::hash::{Hash, Hasher};
 
 /// Basic graph type which implements the relative [trait](GraphTrait)
 /// Formally defined as a set with two members which are also sets,
@@ -163,7 +162,7 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     /// empty constructor.
     /// Creates an empty graph that has no edge and vertex.
     pub fn empty(graph_id: &str) -> Graph<T, E> {
-        let mut g = Graph::null().set_id(graph_id);
+        let g = Graph::null().set_id(graph_id);
         g
     }
     /// construct [Graph] from graph like object with borrowing
