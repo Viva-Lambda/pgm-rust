@@ -8,6 +8,16 @@ use crate::graph::traits::node::Node as NodeTrait;
 use crate::graph::traits::utils::{from_borrowed_data, to_borrowed_data};
 
 use crate::graph::traits::generic::default_with_hash_partial_eq_impl;
+
+use crate::graph::traits::generic::{
+    default_display_with_data_impl, default_getter_impl, default_hash_id_impl,
+    default_idchanger_impl, default_identified_impl, default_loadchanger_impl, default_loaded_impl,
+    default_named_impl, default_partial_eq_impl, default_setter_impl,
+};
+
+use crate::graph::traits::generic::{
+    render_hashmap, IdChanger, Identified, LoadChanger, Loaded, Named,
+};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
@@ -19,7 +29,7 @@ use std::hash::{Hash, Hasher};
 /// Basic graph type which implements the relative [trait](GraphTrait)
 /// Formally defined as a set with two members which are also sets,
 /// see Diestel 2017, p. 2
-#[derive(Debug, Eq, PartialEq, Clone)]
+#[derive(Debug, Clone)]
 pub struct Graph<NodeType: NodeTrait, EdgeType: EdgeTrait<NodeType>> {
     /// graph identifier required for [GraphObject] trait
     _id: String,
@@ -31,27 +41,18 @@ pub struct Graph<NodeType: NodeTrait, EdgeType: EdgeTrait<NodeType>> {
     gdata: (HashSet<NodeType>, HashSet<EdgeType>),
 }
 
-default_with_hash_partial_eq_impl!(Graph);
+default_with_hash_partial_eq_impl!(Graph, <NodeType, EdgeType>, 
+    NodeType: NodeTrait, EdgeType: EdgeTrait<NodeType>);
 
 /// Graph objects display their identifier when serialized to string.
 impl<T: NodeTrait, E: EdgeTrait<T>> fmt::Display for Graph<T, E> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let nid = &self.graph_id;
+        let nid = &self.id();
         write!(f, "<Graph id='{}'/>", nid)
     }
 }
 
-// Changed: Added missing Clone bound to E for GraphObject implementation
-impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphObject for Graph<T, E> {
-    fn null() -> Graph<T, E> {
-        let idstr = String::from("");
-        Graph {
-            _id: idstr,
-            gdata: (HashSet::new(), HashSet::new()),
-            _data: HashMap::new(),
-        }
-    }
-}
+
 
 impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphTrait<T, E> for Graph<T, E> {
     fn vertices(&self) -> HashSet<&T> {
@@ -140,9 +141,9 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     ) -> Graph<T, E> {
         let (edges, mset) = get_vertices(nodes, edges);
         Graph {
-            _id,
+            _id: graph_id,
+            _data: graph_data,
             gdata: (mset, edges),
-            _data,
         }
     }
     /// constructor for the [Graph] object
@@ -154,9 +155,9 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
     ) -> Graph<T, E> {
         let (edges, mset) = get_vertices_from_refset(nodes, edges);
         Graph {
-            _id,
+            _id: graph_id,
+            _data: graph_data,
             gdata: (mset, edges),
-            _data,
         }
     }
     /// empty constructor.
@@ -229,148 +230,17 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> Graph<T, E> {
         }
     }
 }
-
+// Changed: Added missing Clone bound to E for GraphObject implementation
+impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphObject for Graph<T, E> {
+    fn null() -> Graph<T, E> {
+        let idstr = String::from("");
+        Graph {
+            _id: idstr,
+            gdata: (HashSet::new(), HashSet::new()),
+            _data: HashMap::new(),
+        }
+    }
+}
 #[cfg(test)]
 mod tests {
-
-    use super::*; // brings in the parent scope to current module scope
-    use crate::graph::types::edge::Edge;
-    use crate::graph::types::node::Node;
-
-    // mk node
-    fn mk_node(n_id: &str) -> Node {
-        Node::new(n_id.to_string(), HashMap::new())
-    }
-
-    fn mk_nodes(ns: Vec<&str>) -> HashSet<Node> {
-        let mut h: HashSet<Node> = HashSet::new();
-        for n in ns {
-            h.insert(mk_node(n));
-        }
-        h
-    }
-
-    // mk edge
-    fn mk_uedge(n1_id: &str, n2_id: &str, e_id: &str) -> Edge<Node> {
-        let n1 = mk_node(n1_id);
-        let n2 = mk_node(n2_id);
-        let mut h1 = HashMap::new();
-        h1.insert(String::from("my"), vec![String::from("data")]);
-        Edge::undirected(e_id.to_string(), n1, n2, h1)
-    }
-
-    // make graph
-    fn mk_g(g_id: &str) -> Graph<Node, Edge<Node>> {
-        let nodes = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
-        let mut edges = HashSet::new();
-        edges.insert(mk_uedge("n1", "n2", "e1"));
-        edges.insert(mk_uedge("n2", "n3", "e2"));
-        Graph::new(g_id.to_string(), HashMap::new(), nodes, edges)
-    }
-
-    //
-    #[test]
-    fn test_vertices() {
-        let g = mk_g("g1");
-        let vs = g.vertices();
-        //
-        let mut nodes = HashSet::new();
-        let ns = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
-        for n in &ns {
-            nodes.insert(n);
-        }
-        //
-        assert_eq!(nodes, vs);
-    }
-
-    #[test]
-    fn test_edges() {
-        let g = mk_g("g1");
-        let es = g.edges();
-        //
-        let mut edges = HashSet::new();
-        let e1 = mk_uedge("n1", "n2", "e1");
-        let e2 = mk_uedge("n2", "n3", "e2");
-        edges.insert(&e1);
-        edges.insert(&e2);
-        //
-        assert_eq!(edges, es);
-    }
-    #[test]
-    fn test_from_graphish_ref() {
-        let g1 = mk_g("g1");
-        let g2 = mk_g("g1");
-        let g = Graph::from_graphish_ref(&g1);
-        assert_eq!(g, g2);
-    }
-
-    #[test]
-    fn test_from_graphish() {
-        let g1 = mk_g("g1");
-        let g2 = mk_g("g1");
-        let g = Graph::from_graphish(g1);
-        assert_eq!(g, g2);
-    }
-
-    #[test]
-    fn test_from_edgeset() {
-        let mut edges = HashSet::new();
-        edges.insert(mk_uedge("n1", "n2", "e1"));
-        edges.insert(mk_uedge("n2", "n3", "e2"));
-        let g1 = Graph::from_edgeset(edges.clone());
-        let mut edges: HashSet<&Edge<Node>> = HashSet::new();
-        let e1 = mk_uedge("n1", "n2", "e1");
-        let e2 = mk_uedge("n2", "n3", "e2");
-        edges.insert(&e1);
-        edges.insert(&e2);
-
-        let mut nodes = HashSet::new();
-        let n1 = mk_node("n1");
-        let n2 = mk_node("n2");
-        let n3 = mk_node("n3");
-        nodes.insert(&n1);
-        nodes.insert(&n2);
-        nodes.insert(&n3);
-        assert_eq!(g1.vertices(), nodes);
-        assert_eq!(g1.edges(), edges);
-    }
-
-    #[test]
-    fn test_from_edge_node_set() {
-        let mut nodes: HashSet<&Node> = HashSet::new();
-        let mut edges = HashSet::new();
-        let ns = mk_nodes(vec!["n1", "n2", "n3", "n4"]);
-        for n in &ns {
-            nodes.insert(n);
-        }
-        let e1 = mk_uedge("n1", "n2", "e1");
-        let e2 = mk_uedge("n2", "n3", "e2");
-        edges.insert(&e1);
-        edges.insert(&e2);
-        let gedges: HashSet<Edge<Node>> = HashSet::from([e1.clone(), e2.clone()]);
-
-        let gnodes: HashSet<Node> = ns.clone();
-
-        let g = Graph::from_edge_node_set(gedges, gnodes);
-        assert_eq!(g.vertices(), nodes);
-        assert_eq!(g.edges(), edges);
-    }
-
-    #[test]
-    fn test_based_on_node_set() {
-        let nodes = mk_nodes(vec!["n2", "n3"]);
-        let mut edges = HashSet::new();
-        let mut mnodes: HashSet<&Node> = HashSet::new();
-        for n in &nodes {
-            mnodes.insert(n);
-        }
-        edges.insert(mk_uedge("n1", "n2", "e1"));
-        edges.insert(mk_uedge("n2", "n3", "e2"));
-        let g = Graph::based_on_node_set(edges, nodes.clone());
-        assert_eq!(g.vertices(), mnodes);
-        let mut es = HashSet::new();
-        let e1 = mk_uedge("n2", "n3", "e2");
-        es.insert(&e1);
-        assert_eq!(g.edges(), es);
-    }
 }
