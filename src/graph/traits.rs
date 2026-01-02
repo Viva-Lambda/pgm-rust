@@ -18,15 +18,21 @@ pub mod edge;
 /// diverse behaviors that help with lib implementation
 pub mod misc;
 
-
 /// graph module needs to be declared
 pub mod graph;
 
 // behaviors that defines a [Tree]
 // pub mod tree;
 
-// behaviors that defines a [Path]
-// pub mod path;
+/// behaviors that defines a [Path]
+pub mod path;
+
+/// utility functions behaviors
+pub mod utils;
+
+/// generic behaviors
+#[macro_use]
+pub(crate) mod generic;
 
 // behaviors that define a search result
 // pub mod search;

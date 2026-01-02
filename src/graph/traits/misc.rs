@@ -18,3 +18,4 @@ pub trait SetOp: GraphObject {
     /// symmetric set difference
     fn symmetric_difference(a: Self::Input, other: Self::Input) -> Self::Output;
 }
+
