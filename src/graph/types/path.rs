@@ -196,8 +196,8 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphTrait<T, E>
         Path {
             _id: graph_id,
             _data: graph_data,
-            gdata: ordered
-            ,_node_type: PhantomData,
+            gdata: ordered,
+            _node_type: PhantomData,
         }
     }
 }
