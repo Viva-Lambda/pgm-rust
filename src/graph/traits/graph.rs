@@ -1,4 +1,5 @@
 // graph trait
+use crate::errors::PGMRustResult;
 use crate::graph::traits::edge::Edge;
 use crate::graph::traits::graph_obj::GraphObject;
 use crate::graph::traits::node::Node;
@@ -23,7 +24,7 @@ pub trait Graph<NodeType: Node, EdgeType: Edge<NodeType>>: GraphObject {
         _: HashMap<String, Vec<String>>,
         _: HashSet<NodeType>,
         _: HashSet<EdgeType>,
-    ) -> Self;
+    ) -> PGMRustResult<Self>;
 
     /// create graph from edge and vertex references
     fn create_from_ref(
@@ -31,7 +32,7 @@ pub trait Graph<NodeType: Node, EdgeType: Edge<NodeType>>: GraphObject {
         _: HashMap<String, Vec<String>>,
         _: HashSet<&NodeType>,
         _: HashSet<&EdgeType>,
-    ) -> Self;
+    ) -> PGMRustResult<Self>;
 
     /// create vertex id: vertex map
     fn vmap(&self) -> HashMap<String, &NodeType> {

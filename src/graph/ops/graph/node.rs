@@ -1,3 +1,4 @@
+use crate::errors::{PGMRustError, PGMRustResult};
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::edge::nodeops::get_other;
 use crate::graph::ops::graph::boolops::is_in;
@@ -73,15 +74,14 @@ use std::collections::HashSet;
 /// ```
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn neighbors_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a N>
+pub fn neighbors_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> PGMRustResult<HashSet<&'a N>>
 where
     N: NodeTrait,
     E: EdgeTrait<N> + 'a,
     G: GraphTrait<N, E>,
 {
-    // check if node is in graph
     if !is_in(g, n) {
-        panic!("{n} not in {g}");
+        return Err(PGMRustError::NotInGraph(n.to_string(), g.to_string()));
     }
     let mut neighbors = HashSet::new();
     for e in g.edges() {
@@ -92,11 +92,10 @@ where
                 Some(nn2) => {
                     neighbors.insert(nn2);
                 }
-            } 
+            }
         }
     }
-    // check is in
-    neighbors
+    Ok(neighbors)
 }
 
 /// get vertices using their identifier
@@ -151,7 +150,7 @@ where
 /// let n1 = mk_node("n1");
 /// vertex_by_id(&g, "n1") == &n1; // true
 /// ```
-pub fn vertex_by_id<'a, N, E, G>(g: &'a G, vid: &str) -> &'a N
+pub fn vertex_by_id<'a, N, E, G>(g: &'a G, vid: &str) -> PGMRustResult<&'a N>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -205,14 +204,14 @@ mod tests {
     fn test_vertex_by_id() {
         let g = mk_g1();
         let n2 = mk_node("n2");
-        assert_eq!(&n2, vertex_by_id(&g, "n2"));
+        assert_eq!(&n2, vertex_by_id(&g, "n2").unwrap());
     }
 
     #[test]
     fn test_neighbors_of_true() {
         let g = mk_g1();
         let n2 = mk_node("n2");
-        let ns = neighbors_of(&g, &n2);
+        let ns = neighbors_of(&g, &n2).unwrap();
         let n3 = mk_node("n3");
         let n4 = mk_node("n4");
         let mut comps = HashSet::new();
@@ -226,7 +225,7 @@ mod tests {
         let g = mk_g1();
         let n2 = mk_node("n2");
         let n1 = mk_node("n1");
-        let ns = neighbors_of(&g, &n2);
+        let ns = neighbors_of(&g, &n2).unwrap();
         let mut comps = HashSet::new();
         comps.insert(&n1);
         assert_ne!(ns, comps);

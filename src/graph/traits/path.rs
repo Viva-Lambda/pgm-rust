@@ -1,4 +1,5 @@
 // path trait
+use crate::errors::PGMRustResult;
 use crate::graph::traits::edge::Edge;
 use crate::graph::traits::graph::Graph;
 use crate::graph::traits::node::Node;
@@ -9,5 +10,5 @@ pub trait Path<N: Node, E: Edge<N>>: Graph<N, E> {
     fn length(&self) -> usize;
 
     /// end nodes of path
-    fn endvertices(&self) -> (&N, &N);
+    fn endvertices(&self) -> PGMRustResult<(&N, &N)>;
 }

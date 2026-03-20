@@ -7,3 +7,6 @@
 
 #/target
 /Cargo.lock
+
+# added by Viva
+.claude

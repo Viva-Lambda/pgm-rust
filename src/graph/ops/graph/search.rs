@@ -1,4 +1,5 @@
 //! graph searching
+use crate::errors::{PGMRustError, PGMRustResult};
 use crate::graph::ops::edge::nodeops::get_other;
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
@@ -77,7 +78,7 @@ fn depth_first_search<'a, N, E, G, F, C, DFSResult>(
     edge_generator: &F,
     check_cycle: bool,
     start_node: Option<&N>,
-) -> DFSResult
+) -> PGMRustResult<DFSResult>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -99,7 +100,7 @@ where
     for u in vlist {
         match marked.get(&u) {
             None => {
-                panic!("key not exist in marked");
+                return Err(PGMRustError::KeyNotFound(u.clone()));
             }
             Some(val_ref) => {
                 if !val_ref {
@@ -128,6 +129,7 @@ where
             }
         }
     }
+    todo!("depth_first_search result construction not yet implemented")
 }
 
 /// dfs search adapted for cycle detection

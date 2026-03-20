@@ -9,5 +9,9 @@
 /// graph theoretical structures
 pub mod graph;
 
+
+/// graph theoretical structures
+pub mod errors;
+
 // probabilistic graphs
 // pub mod pgm;

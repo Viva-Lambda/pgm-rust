@@ -1,6 +1,7 @@
 //! A base graph which implements the Graph trait for doing graph theoretical
 //! operations
 
+use crate::errors::PGMRustResult;
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::graph_obj::GraphObject;
@@ -79,16 +80,16 @@ impl<T: NodeTrait, E: EdgeTrait<T> + Clone> GraphTrait<T, E> for Graph<T, E> {
         graph_data: HashMap<String, Vec<String>>,
         nodes: HashSet<T>,
         edges: HashSet<E>,
-    ) -> Graph<T, E> {
-        Graph::new(graph_id, graph_data, nodes, edges)
+    ) -> PGMRustResult<Graph<T, E>> {
+        Ok(Graph::new(graph_id, graph_data, nodes, edges))
     }
     fn create_from_ref(
         graph_id: String,
         graph_data: HashMap<String, Vec<String>>,
         nodes: HashSet<&T>,
         edges: HashSet<&E>,
-    ) -> Graph<T, E> {
-        Graph::new_refs(graph_id, graph_data, nodes, edges)
+    ) -> PGMRustResult<Graph<T, E>> {
+        Ok(Graph::new_refs(graph_id, graph_data, nodes, edges))
     }
 }
 

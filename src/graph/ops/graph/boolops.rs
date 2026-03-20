@@ -1,4 +1,5 @@
 //! functions that has a graph among its arguments that output a boolean value
+use crate::errors::{PGMRustError, PGMRustResult};
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::edge::miscops::node_ids;
 use crate::graph::traits::edge::Edge as EdgeTrait;
@@ -114,25 +115,25 @@ where
 /// ```
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn is_adjacent_of<N, E, G>(g: &G, e1: &E, e2: &E) -> bool
+pub fn is_adjacent_of<N, E, G>(g: &G, e1: &E, e2: &E) -> PGMRustResult<bool>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
     G: GraphTrait<N, E>,
 {
     if !is_in(g, e1) {
-        panic!("{e1} not in {g}");
+        return Err(PGMRustError::NotInGraph(e1.to_string(), g.to_string()));
     }
     if !is_in(g, e2) {
-        panic!("{e2} not in {g}");
+        return Err(PGMRustError::NotInGraph(e2.to_string(), g.to_string()));
     }
     if e1.id() == e2.id() {
-        return false;
+        return Ok(false);
     }
     let e1_ns = node_ids(e1);
     let e2_ns = node_ids(e2);
     let common: HashSet<_> = e1_ns.intersection(&e2_ns).collect();
-    !common.is_empty()
+    Ok(!common.is_empty())
 }
 
 /// Check if a node and edge is incident
@@ -169,19 +170,19 @@ where
 ///
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn is_node_incident<N, E, G>(g: &G, e: &E, n: &N) -> bool
+pub fn is_node_incident<N, E, G>(g: &G, e: &E, n: &N) -> PGMRustResult<bool>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
     G: GraphTrait<N, E>,
 {
     if !is_in(g, e) {
-        panic!("{e} not in {g}");
+        return Err(PGMRustError::NotInGraph(e.to_string(), g.to_string()));
     }
     if !is_in(g, n) {
-        panic!("{n} not in {g}");
+        return Err(PGMRustError::NotInGraph(n.to_string(), g.to_string()));
     }
-    is_endvertice(e, n)
+    Ok(is_endvertice(e, n))
 }
 
 /// Checks if given nodes are neighbors
@@ -219,26 +220,26 @@ where
 /// ```
 /// # References
 /// Diestel R. Graph Theory. 2017.
-pub fn is_neighbor_of<N, E, G>(g: &G, n1: &N, n2: &N) -> bool
+pub fn is_neighbor_of<N, E, G>(g: &G, n1: &N, n2: &N) -> PGMRustResult<bool>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
     G: GraphTrait<N, E>,
 {
     if !is_in(g, n1) {
-        panic!("{n1} not in {g}");
+        return Err(PGMRustError::NotInGraph(n1.to_string(), g.to_string()));
     }
     if !is_in(g, n2) {
-        panic!("{n2} not in {g}");
+        return Err(PGMRustError::NotInGraph(n2.to_string(), g.to_string()));
     }
     for e in g.edges() {
         let c1 = is_endvertice(e, n1);
         let c2 = is_endvertice(e, n2);
         if c1 && c2 {
-            return true;
+            return Ok(true);
         }
     }
-    false
+    Ok(false)
 }
 
 #[cfg(test)]
@@ -310,7 +311,7 @@ mod tests {
         let g = mk_g1();
         let e2 = mk_uedge("n2", "n3", "e2"); // some edge
         let e1 = mk_uedge("n1", "n2", "e1"); // some other edge sharing a node
-        assert!(is_adjacent_of(&g, &e1, &e2));
+        assert!(is_adjacent_of(&g, &e1, &e2).unwrap());
     }
 
     #[test]
@@ -318,7 +319,7 @@ mod tests {
         let g = mk_g1();
         let e2 = mk_uedge("n2", "n3", "e2"); // some edge
         let e1 = mk_uedge("n4", "n1", "e1"); // some other edge sharing a node
-        assert!(!is_adjacent_of(&g, &e1, &e2));
+        assert!(!is_adjacent_of(&g, &e1, &e2).unwrap());
     }
 
     #[test]
@@ -328,8 +329,8 @@ mod tests {
         let e1 = Edge::empty("e1", EdgeType::Undirected, "n1", "n2");
         let e2 = Edge::empty("e2", EdgeType::Undirected, "n1", "n1");
         let g = mk_g1();
-        assert!(is_node_incident(&g, &e1, &n1));
-        assert!(!is_node_incident(&g, &e2, &n2));
+        assert!(is_node_incident(&g, &e1, &n1).unwrap());
+        assert!(!is_node_incident(&g, &e2, &n2).unwrap());
     }
 
     #[test]
@@ -337,7 +338,7 @@ mod tests {
         let g1 = mk_g1();
         let n2 = mk_node("n2");
         let n3 = mk_node("n3");
-        assert!(is_neighbor_of(&g1, &n2, &n3));
+        assert!(is_neighbor_of(&g1, &n2, &n3).unwrap());
     }
 
     #[test]
@@ -345,6 +346,6 @@ mod tests {
         let g1 = mk_g1();
         let n1 = mk_node("n1");
         let n3 = mk_node("n3");
-        assert!(!is_neighbor_of(&g1, &n1, &n3));
+        assert!(!is_neighbor_of(&g1, &n1, &n3).unwrap());
     }
 }

@@ -1,5 +1,6 @@
 //! functions that has a graph among its arguments that output a value
 
+use crate::errors::{PGMRustError, PGMRustResult};
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::traits::edge::Edge as EdgeTrait;
 use crate::graph::traits::graph::Graph as GraphTrait;
@@ -133,7 +134,7 @@ where
 }
 
 /// obtain graph object using its identifier
-pub fn by_id<'a, N, E, G, T, F>(g: &'a G, id: &str, f: F) -> &'a T
+pub fn by_id<'a, N, E, G, T, F>(g: &'a G, id: &str, f: F) -> PGMRustResult<&'a T>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -143,10 +144,10 @@ where
 {
     for h in f(g) {
         if h.id() == id {
-            return h;
+            return Ok(h);
         }
     }
-    panic!("{id} not contained in {g}");
+    Err(PGMRustError::NotInGraph(id.to_string(), g.to_string()))
 }
 
 /// Get subgraph using given vertices

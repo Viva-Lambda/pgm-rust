@@ -10,6 +10,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+thiserror = "2.0.18"
 
 [dependencies.uuid]
 version = "1.2.1"

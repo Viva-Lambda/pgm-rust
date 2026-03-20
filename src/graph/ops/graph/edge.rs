@@ -1,5 +1,6 @@
 //! graph operations that output edge
 //
+use crate::errors::{PGMRustError, PGMRustResult};
 use crate::graph::ops::edge::boolops::is_endvertice;
 use crate::graph::ops::graph::boolops::is_in;
 use crate::graph::ops::graph::misc::by_id;
@@ -8,7 +9,7 @@ use crate::graph::traits::graph::Graph as GraphTrait;
 use crate::graph::traits::node::Node as NodeTrait;
 use std::collections::HashSet;
 
-fn mk_edgeset<'a, 'b, N, E, G, F>(g: &'a G, n: &'b N, mut f: F) -> HashSet<&'a E>
+fn mk_edgeset<'a, 'b, N, E, G, F>(g: &'a G, n: &'b N, mut f: F) -> PGMRustResult<HashSet<&'a E>>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -16,7 +17,7 @@ where
     F: FnMut(&'a E, &'b N) -> bool,
 {
     if !is_in(g, n) {
-        panic!("{g} does not contain {n}");
+        return Err(PGMRustError::NotInGraph(n.to_string(), g.to_string()));
     }
     let mut hset = HashSet::new();
     for e in g.edges() {
@@ -24,7 +25,7 @@ where
             hset.insert(e);
         }
     }
-    hset
+    Ok(hset)
 }
 
 /// get all the edges associated to a node.
@@ -72,7 +73,7 @@ where
 /// let es = g.edges();
 /// hset == es; // true
 /// ```
-pub fn edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a E>
+pub fn edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> PGMRustResult<HashSet<&'a E>>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -128,7 +129,7 @@ where
 /// h2.insert(&e2);
 /// hset == h2; // true
 /// ```
-pub fn outgoing_edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a E>
+pub fn outgoing_edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> PGMRustResult<HashSet<&'a E>>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -184,7 +185,7 @@ where
 /// h2.insert(&e1);
 /// hset == h2; // true
 /// ```
-pub fn incoming_edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> HashSet<&'a E>
+pub fn incoming_edges_of<'a, 'b, N, E, G>(g: &'a G, n: &'b N) -> PGMRustResult<HashSet<&'a E>>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
@@ -240,26 +241,25 @@ where
 /// h2.insert(&e1);
 /// hset == h2; // true
 /// ```
-pub fn edges_by_vertices<'a, 'b, N, E, G>(g: &'a G, n1: &'b N, n2: &'b N) -> HashSet<&'a E>
+pub fn edges_by_vertices<'a, 'b, N, E, G>(g: &'a G, n1: &'b N, n2: &'b N) -> PGMRustResult<HashSet<&'a E>>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
     G: GraphTrait<N, E>,
 {
     if !is_in(g, n1) {
-        panic!("{g} does not contain {n1}");
+        return Err(PGMRustError::NotInGraph(n1.to_string(), g.to_string()));
     }
     if !is_in(g, n2) {
-        panic!("{g} does not contain {n2}");
+        return Err(PGMRustError::NotInGraph(n2.to_string(), g.to_string()));
     }
-    //
     let mut hset = HashSet::new();
     for e in g.edges() {
         if is_endvertice(e, n1) && is_endvertice(e, n2) {
             hset.insert(e);
         }
     }
-    hset
+    Ok(hset)
 }
 
 /// get an edge using its identifier
@@ -305,13 +305,12 @@ where
 /// let e1 = mk_uedge("n1", "n2", "e1");
 /// edge == (&e1); // true
 /// ```
-pub fn edge_by_id<'a, 'b, N, E, G>(g: &'a G, id: &str) -> &'a E
+pub fn edge_by_id<'a, 'b, N, E, G>(g: &'a G, id: &str) -> PGMRustResult<&'a E>
 where
     N: NodeTrait,
     E: EdgeTrait<N>,
     G: GraphTrait<N, E>,
 {
-    //
     let f = |mg: &'a G| -> HashSet<&'a E> { mg.edges() };
     by_id(g, id, f)
 }
@@ -351,7 +350,7 @@ mod tests {
     fn test_edges_of() {
         let g = mk_g1();
         let n2 = Node::empty("n2");
-        let hset = edges_of(&g, &n2);
+        let hset = edges_of(&g, &n2).unwrap();
         let es = g.edges();
         assert_eq!(hset, es);
     }
@@ -360,7 +359,7 @@ mod tests {
     fn test_outgoing_edges_of() {
         let g = mk_g1();
         let n2 = Node::empty("n2");
-        let hset = outgoing_edges_of(&g, &n2);
+        let hset = outgoing_edges_of(&g, &n2).unwrap();
         let mut h2 = HashSet::new();
         let e2 = mk_uedge("n2", "n3", "e2");
         h2.insert(&e2);
@@ -371,7 +370,7 @@ mod tests {
     fn test_incoming_edges_of() {
         let g = mk_g1();
         let n2 = Node::empty("n2");
-        let hset = incoming_edges_of(&g, &n2);
+        let hset = incoming_edges_of(&g, &n2).unwrap();
         let mut h2 = HashSet::new();
         let e1 = mk_uedge("n1", "n2", "e1");
         h2.insert(&e1);
@@ -387,7 +386,7 @@ mod tests {
     fn test_edge_by_id() {
         let g = mk_g1();
         let eid = "e1";
-        let edge = edge_by_id(&g, &eid);
+        let edge = edge_by_id::<Node, Edge<Node>, _>(&g, &eid).unwrap();
         let e1 = mk_uedge("n1", "n2", "e1");
         assert_eq!(&e1, edge);
     }
@@ -397,7 +396,7 @@ mod tests {
         let g = mk_g1();
         let n2 = Node::empty("n2");
         let n1 = Node::empty("n1");
-        let hset = edges_by_vertices(&g, &n1, &n2);
+        let hset = edges_by_vertices(&g, &n1, &n2).unwrap();
         let mut h2 = HashSet::new();
         let e1 = mk_uedge("n1", "n2", "e1");
         h2.insert(&e1);
